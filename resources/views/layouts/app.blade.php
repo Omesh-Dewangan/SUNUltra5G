@@ -170,12 +170,12 @@
     </main>
 
     <footer>
-        &copy; {{ date('Y') }} SUNUltra5G Project. All rights reserved.
+        &copy; {{ date('Y') }} SUN-Ultra5G Project. All rights reserved.
     </footer>
 
     @yield('scripts')
 
-    
+
 
     <script>
         $(document).ready(function() {
