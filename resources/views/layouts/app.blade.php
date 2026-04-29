@@ -20,6 +20,16 @@
             --text-color: #212529;
             --glass-bg: rgba(255, 255, 255, 0.8);
             --glass-border: rgba(255, 255, 255, 0.2);
+            --card-shadow: rgba(31, 38, 135, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --text-color: #f1f5f9;
+            --glass-bg: rgba(30, 41, 59, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --card-shadow: rgba(0, 0, 0, 0.4);
+            --secondary-color: #94a3b8;
         }
 
         body {
@@ -31,6 +41,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -49,7 +60,7 @@
             border-radius: 15px;
             padding: 30px;
             margin-top: 50px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            box-shadow: 0 8px 32px 0 var(--card-shadow);
             animation: fadeIn 0.8s ease-out;
         }
 
@@ -122,26 +133,73 @@
             font-size: 0.9em;
         }
 
-        /* AJAX Demo Styles */
-        #ajax-response {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            display: none;
+        /* Theme Toggle */
+        .theme-toggle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 12px var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: scale(1.1);
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     @yield('styles')
 </head>
 <body>
+    <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Dark/Light Mode">
+        <i class="fas fa-moon"></i>
+    </button>
 
     <main class="container">
         @yield('content')
     </main>
 
     <footer>
-        &copy; {{ date('Y') }} Ultra5G Project. All rights reserved.
+        &copy; {{ date('Y') }} SUNUltra5G Project. All rights reserved.
     </footer>
 
     @yield('scripts')
+
+    <script>
+        $(document).ready(function() {
+            const themeToggle = $('#theme-toggle');
+            const themeIcon = themeToggle.find('i');
+            const currentTheme = localStorage.getItem('theme') || 'light';
+
+            if (currentTheme === 'dark') {
+                $('html').attr('data-theme', 'dark');
+                themeIcon.removeClass('fa-moon').addClass('fa-sun');
+            }
+
+            themeToggle.on('click', function() {
+                const isDark = $('html').attr('data-theme') === 'dark';
+                
+                if (isDark) {
+                    $('html').removeAttr('data-theme');
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.removeClass('fa-sun').addClass('fa-moon');
+                } else {
+                    $('html').attr('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.removeClass('fa-moon').addClass('fa-sun');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

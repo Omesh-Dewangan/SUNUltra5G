@@ -26,14 +26,32 @@
             --text-dark: #1e293b;
             --text-muted: #64748b;
             --success-green: #22c55e;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --dropdown-bg: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --header-bg: #1e293b;
+            --content-bg: #0f172a;
+            --text-dark: #f1f5f9;
+            --text-muted: #94a3b8;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --input-bg: #334155;
+            --dropdown-bg: #1e293b;
+            --sidebar-bg: #000000;
         }
 
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--content-bg);
+            color: var(--text-dark);
             margin: 0;
             display: flex;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Sidebar Styles */
@@ -114,12 +132,13 @@
         }
 
         .stat-card {
-            background: white;
+            background: var(--card-bg);
             padding: 24px;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
+            border: 1px solid var(--border-color);
         }
 
         .stat-value {
@@ -138,11 +157,12 @@
 
         /* Tables & Lists */
         .data-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             padding: 24px;
             margin-bottom: 24px;
+            border: 1px solid var(--border-color);
         }
 
         .card-title {
@@ -228,8 +248,8 @@
             top: 100%;
             right: 0;
             width: 240px;
-            background: white;
-            border: 1px solid #e2e8f0;
+            background: var(--dropdown-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
             margin-top: 12px;
@@ -341,10 +361,14 @@
                 </button>
                 <div class="search-container" style="position: relative; max-width: 400px; width: 100%; display: none;" class="lg:block">
                     <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px;"></i>
-                    <input type="text" placeholder="Search analytics, users..." style="width: 100%; padding: 8px 12px 8px 35px; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 14px; background: #f9fafb;">
+                    <input type="text" placeholder="Search analytics, users..." style="width: 100%; padding: 8px 12px 8px 35px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 14px; background: var(--input-bg); color: var(--text-dark);">
                 </div>
             </div>
             <div class="user-profile" style="display: flex; align-items: center; gap: 15px;">
+                <!-- Theme Toggle -->
+                <div id="theme-toggle" style="cursor: pointer; padding: 8px; border-radius: 8px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-muted); transition: all 0.2s; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-moon"></i>
+                </div>
                 <!-- Notifications Dropdown -->
                 <div class="dropdown">
                     <div id="notif-dropdown-toggle" style="position: relative; cursor: pointer; padding: 5px;">
@@ -445,6 +469,31 @@
             // Prevent closing when clicking inside dropdown
             $('.dropdown-menu').on('click', function(e) {
                 e.stopPropagation();
+            });
+
+            // Theme Toggle Logic
+            const themeToggle = $('#theme-toggle');
+            const themeIcon = themeToggle.find('i');
+            const currentTheme = localStorage.getItem('theme') || 'light';
+
+            // Apply theme on load
+            if (currentTheme === 'dark') {
+                $('html').attr('data-theme', 'dark');
+                themeIcon.removeClass('fa-moon').addClass('fa-sun');
+            }
+
+            themeToggle.on('click', function() {
+                const isDark = $('html').attr('data-theme') === 'dark';
+                
+                if (isDark) {
+                    $('html').removeAttr('data-theme');
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.removeClass('fa-sun').addClass('fa-moon');
+                } else {
+                    $('html').attr('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.removeClass('fa-moon').addClass('fa-sun');
+                }
             });
         });
     </script>
