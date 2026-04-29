@@ -157,7 +157,7 @@
                 success: function(response) {
                     btn.text('Success! Redirecting...').css('background-color', '#28a745');
                     setTimeout(() => {
-                        window.location.href = response.redirect;
+                        window.location.href = response.data.redirect;
                     }, 1000);
                 },
                 error: function(xhr) {

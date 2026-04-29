@@ -76,10 +76,10 @@
                         .css({'background': '#d1fae5', 'color': '#065f46', 'display': 'block'});
                     
                     // Update header names dynamically
-                    $('#header-user-name').text(response.user.name);
-                    $('#header-user-initial').text(response.user.initial);
-                    $('#profile-dropdown-name').text(response.user.name);
-                    $('#profile-dropdown-email').text(response.user.email);
+                    $('#header-user-name').text(response.data.user.name);
+                    $('#header-user-initial').text(response.data.user.initial);
+                    $('#profile-dropdown-name').text(response.data.user.name);
+                    $('#profile-dropdown-email').text(response.data.user.email);
                     
                     btn.prop('disabled', false).text('Save Changes');
                 },

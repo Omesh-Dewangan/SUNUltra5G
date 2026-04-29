@@ -2,44 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\UpdateProfileRequest;
+use App\Services\ProfileService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Exception;
 
 class ProfileController extends Controller
 {
+    protected $profileService;
+
+    public function __construct(ProfileService $profileService)
+    {
+        $this->profileService = $profileService;
+    }
+
     public function index()
     {
         return view('profile');
     }
 
-    public function update(Request $request)
+    public function update(UpdateProfileRequest $request): JsonResponse
     {
-        $user = Auth::user();
-        
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:8|confirmed',
-        ]);
+        try {
+            $user = $this->profileService->updateProfile(Auth::id(), $request->validated());
 
-        $user->name = $request->name;
-        $user->email = $request->email;
-
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
+            return response()->json([
+                'status' => true,
+                'message' => 'Profile updated successfully!',
+                'data' => [
+                    'user' => [
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'initial' => strtoupper(substr($user->name, 0, 1))
+                    ]
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update profile. Please try again.',
+                'data' => []
+            ], 500);
         }
-
-        $user->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Profile updated successfully!',
-            'user' => [
-                'name' => $user->name,
-                'email' => $user->email,
-                'initial' => strtoupper(substr($user->name, 0, 1))
-            ]
-        ]);
     }
 }
