@@ -175,6 +175,8 @@
 
     @yield('scripts')
 
+    
+
     <script>
         $(document).ready(function() {
             const themeToggle = $('#theme-toggle');
