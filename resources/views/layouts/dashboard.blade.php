@@ -339,6 +339,16 @@
             <a href="#" class="nav-link">
                 <i class="fas fa-chart-pie"></i> Reports
             </a>
+
+            @if(auth()->user()->hasRole('super_admin'))
+                <div style="padding: 20px 15px 10px; font-size: 11px; color: rgba(255,255,255,0.3); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Security Management</div>
+                <a href="{{ route('rbac.users') }}" class="nav-link {{ request()->routeIs('rbac.users') ? 'active' : '' }}">
+                    <i class="fas fa-user-shield"></i> User Roles
+                </a>
+                <a href="{{ route('rbac.roles') }}" class="nav-link {{ request()->routeIs('rbac.roles') ? 'active' : '' }}">
+                    <i class="fas fa-key"></i> Roles & Permissions
+                </a>
+            @endif
             
             <div style="margin-top: auto; padding: 20px 10px;">
                 <form action="{{ route('logout') }}" method="POST">

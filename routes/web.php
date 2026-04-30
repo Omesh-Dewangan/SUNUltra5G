@@ -16,6 +16,14 @@ Route::middleware('auth')->group(function() {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+
+    // RBAC Management (Super Admin only)
+    Route::middleware('role:super_admin')->prefix('rbac')->name('rbac.')->group(function() {
+        Route::get('/users', [RBACController::class, 'userRolesIndex'])->name('users');
+        Route::post('/users/assign', [RBACController::class, 'assignRole'])->name('users.assign');
+        Route::get('/roles', [RBACController::class, 'rolePermissionsIndex'])->name('roles');
+        Route::post('/roles/sync', [RBACController::class, 'syncPermissions'])->name('roles.sync');
+    });
 });
 
 Route::get('/test-connection', function () {

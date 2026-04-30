@@ -50,6 +50,18 @@ app/
 2.  **CSRF Protection**: Ensure CSRF protection is active for all forms and AJAX requests.
 3.  **Sanitization**: Validate and sanitize all user inputs.
 4.  **Data Exposure**: Never expose sensitive data (passwords, tokens, keys) in responses.
+5.  **RBAC (Role-Based Access Control)**: All access must be strictly controlled via Roles and Permissions. No hardcoded role checks in logic; use permissions.
+
+---
+
+## 🔐 RBAC (Role-Based Access Control) Rules
+
+1.  **Granular Permissions**: Every action (e.g., `create_order`, `edit_inventory`) must have a corresponding permission.
+2.  **Role Inheritance**: Roles (e.g., `Super Admin`, `Dealer`) should be assigned groups of permissions.
+3.  **Middleware Protection**: Use `role` or `permission` middleware on all sensitive routes.
+4.  **Blade Directives**: Use `@can` or custom directives to hide UI elements based on permissions.
+5.  **Audit Trail**: Log whenever a sensitive permission is used.
+6.  **No Permission Checking in Controllers**: Controllers should use middleware or Gates. Services can check permissions if complex logic is involved.
 
 ---
 
