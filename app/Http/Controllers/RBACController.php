@@ -42,6 +42,43 @@ class RBACController extends Controller
     }
 
     /**
+     * Create New User from RBAC (AJAX)
+     */
+    public function storeUser(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'role_id' => 'nullable|exists:roles,id'
+        ]);
+
+        try {
+            // Since there is no UserRepository->create implemented yet in this context,
+            // we will use the Eloquent Model directly for creating the user.
+            $user = \App\Models\User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            ]);
+
+            if ($request->filled('role_id')) {
+                $this->rbacService->assignUserRole($user->id, $request->role_id);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User created successfully!'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to create user: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Assign Role to User (AJAX)
      */
     public function assignRole(Request $request): JsonResponse
@@ -98,6 +135,63 @@ class RBACController extends Controller
                 'status' => false,
                 'message' => 'Failed to update permissions.'
             ], 500);
+        }
+    }
+
+    /**
+     * Create New Role (AJAX)
+     */
+    public function storeRole(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|unique:roles,name',
+            'slug' => 'required|string|unique:roles,slug',
+            'description' => 'nullable|string'
+        ]);
+
+        try {
+            $this->roleRepository->create($request->only(['name', 'slug', 'description']));
+            return response()->json(['status' => true, 'message' => 'Role created successfully!']);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => 'Failed to create role.'], 500);
+        }
+    }
+
+    /**
+     * Update Role (AJAX)
+     */
+    public function updateRole(Request $request, $id): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|unique:roles,name,'.$id,
+            'slug' => 'required|string|unique:roles,slug,'.$id,
+            'description' => 'nullable|string'
+        ]);
+
+        try {
+            $this->roleRepository->update($id, $request->only(['name', 'slug', 'description']));
+            return response()->json(['status' => true, 'message' => 'Role updated successfully!']);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => 'Failed to update role.'], 500);
+        }
+    }
+
+    /**
+     * Delete Role (AJAX)
+     */
+    public function destroyRole($id): JsonResponse
+    {
+        try {
+            // Prevent deleting critical roles
+            $role = $this->roleRepository->findById($id);
+            if ($role && in_array($role->slug, ['super_admin', 'admin'])) {
+                return response()->json(['status' => false, 'message' => 'Cannot delete critical system roles.'], 403);
+            }
+
+            $this->roleRepository->delete($id);
+            return response()->json(['status' => true, 'message' => 'Role deleted successfully!']);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => 'Failed to delete role.'], 500);
         }
     }
 }

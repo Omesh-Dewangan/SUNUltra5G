@@ -120,3 +120,12 @@ Whenever creating a new feature, generate:
 1. Transaction Safety
 2. Data Integrity
 3. Clean Architecture
+
+---
+
+## 🎨 UI & Styling Rules
+
+1.  **Bootstrap 5**: Use Bootstrap 5 for all layouts, grids, and UI components.
+2.  **Responsiveness**: Ensure full mobile responsiveness using Bootstrap's grid system (`row`, `col`, etc.).
+3.  **Bootstrap Utilities**: Prioritize Bootstrap utility classes over custom CSS for spacing, alignment, and display.
+4.  **Consistency**: Use standard Bootstrap components (Modals, Alerts, Forms) to maintain a premium and unified design across the entire project.

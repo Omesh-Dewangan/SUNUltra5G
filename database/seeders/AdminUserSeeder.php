@@ -13,12 +13,17 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@example.com'],
+        $user = User::updateOrCreate(
+            ['email' => 'omeshdewangan@gmail.com'],
             [
-                'name' => 'Admin User',
-                'password' => Hash::make('password123'),
+                'name' => 'Omesh Dewangan',
+                'password' => Hash::make('passward123'),
             ]
         );
+
+        // Assign super_admin role directly to this user
+        if (method_exists($user, 'assignRole')) {
+            $user->assignRole('super_admin');
+        }
     }
 }

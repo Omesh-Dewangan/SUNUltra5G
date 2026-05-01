@@ -1,161 +1,349 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Admin Dashboard - Ultra5G')
+@section('title', 'Administrative Dashboard')
 
 @section('content')
-<!-- Page Header -->
-<div style="margin-bottom: 24px;">
-    <h1 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">Analytics Overview</h1>
-    <p style="color: var(--text-muted); margin-top: 4px;">Welcome back to your administration panel.</p>
-</div>
+<div class="container-fluid p-0">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1">System Overview</h1>
+            <p class="text-muted small mb-0">Real-time analytics and inventory control panel.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-white shadow-sm border text-muted small"><i class="fas fa-download me-2"></i>Export Report</button>
+            <a href="{{ route('sales.index') }}" class="btn btn-primary shadow-sm small px-4 fw-bold">New Sales Order</a>
+        </div>
+    </div>
 
-<!-- Stats Grid -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
-                <span class="stat-label">Total LED Sales</span>
-                <span class="stat-value">5,284</span>
-            </div>
-            <div style="padding: 10px; background: #e0f2fe; color: #0284c7; border-radius: 10px;">
-                <i class="fas fa-lightbulb fa-lg"></i>
-            </div>
-        </div>
-        <span style="color: #10b981; font-size: 13px; margin-top: 10px;">
-            <i class="fas fa-arrow-up"></i> 18% vs last month
-        </span>
-    </div>
-    <div class="stat-card">
-        <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
-                <span class="stat-label">Wire Stock (m)</span>
-                <span class="stat-value">12,450</span>
-            </div>
-            <div style="padding: 10px; background: #dcfce7; color: #16a34a; border-radius: 10px;">
-                <i class="fas fa-drum-steelpan fa-lg"></i>
+    <!-- Quick Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="stat-card border-0 shadow-sm">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="stat-label">Monthly LED Sales</span>
+                        <span class="stat-value text-primary">₹{{ number_format($totalLedSales / 1000, 1) }}k</span>
+                    </div>
+                    <div class="bg-primary-light p-2 rounded-3 text-primary">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small">
+                    <span class="text-success fw-bold"><i class="fas fa-arrow-up me-1"></i>{{ $ledTrend }}%</span>
+                    <span class="text-muted ms-1">vs last month</span>
+                </div>
             </div>
         </div>
-        <span style="color: #3b82f6; font-size: 13px; margin-top: 10px;">
-            <i class="fas fa-info-circle"></i> Stock sufficient
-        </span>
-    </div>
-    <div class="stat-card">
-        <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
-                <span class="stat-label">Solar Orders</span>
-                <span class="stat-value">124</span>
-            </div>
-            <div style="padding: 10px; background: #fef9c3; color: #ca8a04; border-radius: 10px;">
-                <i class="fas fa-sun fa-lg"></i>
-            </div>
-        </div>
-        <span style="color: #10b981; font-size: 13px; margin-top: 10px;">
-            <i class="fas fa-check-circle"></i> 12 Pending delivery
-        </span>
-    </div>
-    <div class="stat-card">
-        <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
-                <span class="stat-label">Active Dealers</span>
-                <span class="stat-value">86</span>
-            </div>
-            <div style="padding: 10px; background: #ede9fe; color: #7c3aed; border-radius: 10px;">
-                <i class="fas fa-handshake fa-lg"></i>
-            </div>
-        </div>
-        <span style="color: #3b82f6; font-size: 13px; margin-top: 10px;">
-            <i class="fas fa-map-marker-alt"></i> Across Chhattisgarh
-        </span>
-    </div>
-</div>
 
-<!-- Data Sections -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px;">
-    <!-- Recent Activity -->
-    <div class="data-card" style="flex: 2;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 class="card-title" style="margin: 0;">Recent Orders</h3>
-            <a href="#" style="font-size: 13px; color: var(--primary-blue); text-decoration: none; font-weight: 600;">View All Orders</a>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="stat-card border-0 shadow-sm">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="stat-label">Total Wire Stock</span>
+                        <span class="stat-value text-success">{{ number_format($wireStock) }}m</span>
+                    </div>
+                    <div class="bg-success-light p-2 rounded-3 text-success">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small">
+                    <span class="badge {{ $wireStatus == 'Healthy' ? 'bg-success-light text-success' : 'bg-warning-light text-warning' }}">{{ $wireStatus }}</span>
+                </div>
+            </div>
         </div>
-        <div class="table-responsive">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 500px;">
-                <thead>
-                    <tr style="border-bottom: 1px solid #edf2f7; color: var(--text-muted); font-size: 12px; text-transform: uppercase;">
-                        <th style="padding: 12px 0;">Dealer / Product</th>
-                        <th style="padding: 12px 0;">Quantity</th>
-                        <th style="padding: 12px 0;">Status</th>
-                        <th style="padding: 12px 0;">Date</th>
-                    </tr>
-                </thead>
-                <tbody style="font-size: 14px;">
-                    <tr style="border-bottom: 1px solid #f9fafb;">
-                        <td style="padding: 16px 0;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 30px; height: 30px; border-radius: 6px; background: #fee2e2; color: #b91c1c; display: flex; align-items: center; justify-content: center; font-size: 11px;"><i class="fas fa-bolt"></i></div>
-                                <div>
-                                    <div style="font-weight: 600;">Raipur Electricals</div>
-                                    <div style="font-size: 11px; color: var(--text-muted);">9W LED Bulb (100pcs)</div>
-                                </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="stat-card border-0 shadow-sm">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="stat-label">Total Orders</span>
+                        <span class="stat-value text-warning">{{ $totalOrdersCount }}</span>
+                    </div>
+                    <div class="bg-warning-light p-2 rounded-3 text-warning">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small text-muted">Last 30 days activity</div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="stat-card border-0 shadow-sm">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="stat-label">Active Dealers</span>
+                        <span class="stat-value text-info">{{ $activeDealersCount }}</span>
+                    </div>
+                    <div class="bg-info-light p-2 rounded-3 text-info">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small text-muted">
+                    <span class="fw-bold text-dark">{{ $dealerStatus }}</span> verification pending
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Analytics Row -->
+    <div class="row g-4 mb-4">
+        <!-- Revenue Trend -->
+        <div class="col-12 col-xl-8">
+            <div class="data-card border-0 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h6 fw-bold text-dark mb-0 text-uppercase letter-spacing-1">Revenue Trend (Last 6 Months)</h3>
+                    <span class="badge bg-primary-light text-primary px-3">Growth Analysis</span>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="revenueTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Performance -->
+        <div class="col-12 col-xl-4">
+            <div class="data-card border-0 shadow-sm h-100">
+                <h3 class="h6 fw-bold text-dark mb-4 text-uppercase letter-spacing-1">Category Revenue Mix</h3>
+                <div style="height: 250px;">
+                    <canvas id="categoryRevenueChart"></canvas>
+                </div>
+                <div class="mt-4">
+                    <div id="categoryLegend" class="d-flex flex-wrap gap-2 justify-content-center"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Top Selling Products -->
+        <div class="col-12 col-lg-7">
+            <div class="data-card border-0 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h6 fw-bold text-dark mb-0 text-uppercase letter-spacing-1">Top Selling Products</h3>
+                    <small class="text-muted">Last 30 Days</small>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="border-0 extra-small fw-bold text-uppercase py-3">Product</th>
+                                <th class="border-0 extra-small fw-bold text-uppercase py-3 text-center">Units Sold</th>
+                                <th class="border-0 extra-small fw-bold text-uppercase py-3 text-end">Popularity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($topSellingProducts as $item)
+                            <tr>
+                                <td class="py-3">
+                                    <div class="fw-bold small text-dark">{{ $item->inventory->name }}</div>
+                                    <div class="extra-small text-muted">{{ $item->inventory->code }}</div>
+                                </td>
+                                <td class="text-center py-3">
+                                    <span class="badge bg-success-light text-success rounded-pill px-3">{{ number_format($item->total_sold) }} {{ $item->inventory->unit }}</span>
+                                </td>
+                                <td class="py-3 text-end" style="width: 120px;">
+                                    <div class="progress" style="height: 6px; border-radius: 10px;">
+                                        @php $perc = min(100, ($item->total_sold / ($topSellingProducts->first()->total_sold ?? 1)) * 100); @endphp
+                                        <div class="progress-bar bg-primary" style="width: {{ $perc }}%"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="3" class="text-center py-4 text-muted small">No sales data found.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical Re-order List -->
+        <div class="col-12 col-lg-5">
+            <div class="data-card border-0 shadow-sm h-100 border-start border-4 border-danger">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="h6 fw-bold text-danger mb-1 text-uppercase letter-spacing-1">Critical Re-order List</h3>
+                        <p class="extra-small text-muted mb-0">Below minimum safety threshold</p>
+                    </div>
+                    <span class="badge bg-danger text-white rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 25px; height: 25px;">{{ $lowStockCount }}</span>
+                </div>
+
+                <div class="d-flex flex-column gap-3">
+                    @forelse($lowStockItems as $item)
+                    <div class="p-3 rounded-4 border bg-light-subtle position-relative overflow-hidden">
+                        @if($item->stock_quantity == 0)
+                        <div class="position-absolute top-0 end-0 p-2">
+                            <span class="pulsate-red d-block rounded-circle" style="width: 8px; height: 8px;"></span>
+                        </div>
+                        @endif
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="min-w-0">
+                                <div class="fw-bold small text-dark text-truncate">{{ $item->name }}</div>
+                                <div class="extra-small text-muted">SKU: {{ $item->code }}</div>
                             </div>
-                        </td>
-                        <td style="padding: 16px 0; font-weight: 600;">100 Units</td>
-                        <td style="padding: 16px 0;"><span style="padding: 4px 8px; background: #d1fae5; color: #065f46; border-radius: 6px; font-size: 11px; font-weight: 600;">Dispatched</span></td>
-                        <td style="padding: 16px 0; color: var(--text-muted);">Today</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #f9fafb;">
-                        <td style="padding: 16px 0;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 30px; height: 30px; border-radius: 6px; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center; font-size: 11px;"><i class="fas fa-drum-steelpan"></i></div>
-                                <div>
-                                    <div style="font-weight: 600;">Bhilai Cables Ltd</div>
-                                    <div style="font-size: 11px; color: var(--text-muted);">House Wiring Cable (500m)</div>
-                                </div>
+                            <div class="text-end">
+                                <div class="fw-bold {{ $item->stock_quantity == 0 ? 'text-danger' : 'text-warning' }} small">{{ $item->stock_quantity }} {{ $item->unit }}</div>
+                                <div class="extra-small text-muted">In Stock</div>
                             </div>
-                        </td>
-                        <td style="padding: 16px 0; font-weight: 600;">500 Meters</td>
-                        <td style="padding: 16px 0;"><span style="padding: 4px 8px; background: #fef3c7; color: #92400e; border-radius: 6px; font-size: 11px; font-weight: 600;">Processing</span></td>
-                        <td style="padding: 16px 0; color: var(--text-muted);">Yesterday</td>
-                    </tr>
-                </tbody>
-            </table>
+                        </div>
+                        <div class="progress" style="height: 4px; border-radius: 10px; background: #eee;">
+                            @php 
+                                $perc = ($item->stock_quantity / ($item->low_stock_threshold ?: 1)) * 100;
+                                $color = $item->stock_quantity == 0 ? 'bg-danger' : 'bg-warning';
+                            @endphp
+                            <div class="progress-bar {{ $color }}" style="width: {{ min(100, $perc) }}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="extra-small text-muted">Threshold: {{ $item->low_stock_threshold }}</span>
+                            <a href="{{ route('inventory.index') }}" class="extra-small fw-bold text-primary text-decoration-none">Order Stock <i class="fas fa-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-5">
+                        <i class="fas fa-check-circle text-success fs-1 mb-3 opacity-25"></i>
+                        <p class="text-muted small">All stock levels are healthy!</p>
+                    </div>
+                    @endforelse
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Notifications -->
-    <div class="data-card" style="flex: 1;">
-        <h3 class="card-title">System Activity</h3>
-        <div style="display: flex; flex-direction: column; gap: 18px;">
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <div style="width: 36px; height: 36px; border-radius: 10px; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-database" style="font-size: 14px;"></i>
-                </div>
-                <div>
-                    <div style="font-weight: 600; font-size: 13px;">Database Optimized</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">2 hours ago</div>
-                </div>
-            </div>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <div style="width: 36px; height: 36px; border-radius: 10px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-shield-alt" style="font-size: 14px;"></i>
-                </div>
-                <div>
-                    <div style="font-weight: 600; font-size: 13px;">Security Scan Pass</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">5 hours ago</div>
-                </div>
-            </div>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <div style="width: 36px; height: 36px; border-radius: 10px; background: #fff1f2; color: #e11d48; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 14px;"></i>
-                </div>
-                <div>
-                    <div style="font-weight: 600; font-size: 13px;">High CPU Usage</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">10 hours ago</div>
+    <!-- Inventory Movement Trend & Recent -->
+    <div class="row g-4">
+        <!-- Stock Trend -->
+        <div class="col-12 col-xl-8">
+            <div class="data-card border-0 shadow-sm h-100">
+                <h3 class="h6 fw-bold text-dark mb-4 text-uppercase letter-spacing-1">Inventory Movement Trend (Last 7 Days)</h3>
+                <div style="height: 350px;">
+                    <canvas id="stockTrendChart"></canvas>
                 </div>
             </div>
         </div>
-        <button style="width: 100%; margin-top: 25px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: white; color: var(--text-dark); font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-            Manage Notifications
-        </button>
+
+        <!-- Recent Activity -->
+        <div class="col-12 col-xl-4">
+            <div class="data-card border-0 shadow-sm h-100">
+                <h3 class="h6 fw-bold text-dark mb-4 text-uppercase letter-spacing-1">Recent Activity</h3>
+                <div class="activity-timeline">
+                    @foreach($recentTransactions as $tx)
+                    <div class="d-flex gap-3 mb-4 position-relative">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center {{ $tx->type == 'in' ? 'bg-success-light text-success' : 'bg-danger-light text-danger' }}" style="width: 32px; height: 32px;">
+                                <i class="fas fa-{{ $tx->type == 'in' ? 'arrow-down' : 'arrow-up' }} small"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="small fw-bold text-dark">{{ $tx->inventory->name }}</div>
+                            <div class="extra-small text-muted">{{ $tx->type == 'in' ? 'Added' : 'Removed' }} {{ $tx->quantity }} {{ $tx->inventory->unit }} • {{ $tx->created_at->diffForHumans() }}</div>
+                            @if($tx->remarks)
+                            <div class="extra-small mt-1 px-2 py-1 bg-light rounded border text-muted">"{{ $tx->remarks }}"</div>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                <a href="{{ route('inventory.index') }}" class="btn btn-light w-100 extra-small fw-bold py-2 mt-auto">View All Movement</a>
+            </div>
+        </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+$(document).ready(function() {
+    // Stock Trend Chart
+    const ctxTrend = document.getElementById('stockTrendChart').getContext('2d');
+    new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($chartLabels) !!},
+            datasets: [
+                {
+                    label: 'Stock In',
+                    data: {!! json_encode($chartIn) !!},
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Stock Out',
+                    data: {!! json_encode($chartOut) !!},
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { usePointStyle: true, font: { size: 11 } } } },
+            scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
+        }
+    });
+
+    // Revenue Trend Chart
+    const ctxRevenue = document.getElementById('revenueTrendChart').getContext('2d');
+    new Chart(ctxRevenue, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($monthlyRevenueLabels) !!},
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: {!! json_encode($monthlyRevenueData) !!},
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#3b82f6'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
+        }
+    });
+
+    // Category Breakdown Chart
+    const ctxCategory = document.getElementById('categoryRevenueChart').getContext('2d');
+    const categoryData = {!! json_encode($categoryRevenue) !!};
+    const categoryChart = new Chart(ctxCategory, {
+        type: 'doughnut',
+        data: {
+            labels: categoryData.map(c => c.name),
+            datasets: [{
+                data: categoryData.map(c => c.revenue),
+                backgroundColor: ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Custom Legend for Category Chart
+    const legendContainer = document.getElementById('categoryLegend');
+    if (legendContainer) {
+        categoryData.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'extra-small d-flex align-items-center gap-1 px-2 py-1 rounded bg-light border';
+            div.innerHTML = `<span style="width: 8px; height: 8px; background: ${categoryChart.data.datasets[0].backgroundColor[index]}; border-radius: 50%;"></span> ${item.name}`;
+            legendContainer.appendChild(div);
+        });
+    }
+});
+</script>
 @endsection

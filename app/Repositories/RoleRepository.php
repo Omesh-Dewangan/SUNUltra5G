@@ -28,4 +28,23 @@ class RoleRepository
     {
         return $this->model->where('slug', $slug)->first();
     }
+
+    public function create(array $data): Role
+    {
+        return $this->model->create($data);
+    }
+
+    public function update(int $id, array $data): bool
+    {
+        $role = $this->findById($id);
+        if (!$role) return false;
+        return $role->update($data);
+    }
+
+    public function delete(int $id): bool
+    {
+        $role = $this->findById($id);
+        if (!$role) return false;
+        return $role->delete();
+    }
 }

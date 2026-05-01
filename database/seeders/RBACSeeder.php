@@ -18,6 +18,7 @@ class RBACSeeder extends Seeder
             ['name' => 'Manage Orders', 'slug' => 'manage_orders'],
             ['name' => 'Manage Users', 'slug' => 'manage_users'],
             ['name' => 'Manage Dealers', 'slug' => 'manage_dealers'],
+            ['name' => 'Manage Masters', 'slug' => 'manage_masters'],
         ];
 
         foreach ($permissions as $permission) {
