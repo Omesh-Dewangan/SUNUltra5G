@@ -53,14 +53,14 @@
         <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm h-100 hover-lift overflow-hidden" style="border-radius: 16px;">
                 <div class="card-body p-4">
-                    <div class="d-flex align-items-center gap-4">
-                        <div class="bg-success-light text-success p-4 rounded-4">
+                    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-4">
+                        <div class="bg-success-light text-success p-4 rounded-4 mx-auto mx-sm-0">
                             <i class="fas fa-plus-circle fs-3"></i>
                         </div>
-                        <div>
+                        <div class="text-center text-sm-start w-100">
                             <h3 class="h5 fw-bold text-dark mb-1">Stock Inbound</h3>
                             <p class="text-muted small mb-3">Add new stock received from suppliers or returns.</p>
-                            <button class="btn btn-success btn-sm px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#stockInModal">
+                            <button class="btn btn-success btn-sm px-4 fw-bold w-100 w-sm-auto" data-bs-toggle="modal" data-bs-target="#stockInModal">
                                 <i class="fas fa-arrow-down me-2"></i>Process Stock In
                             </button>
                         </div>
@@ -71,14 +71,14 @@
         <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm h-100 hover-lift overflow-hidden" style="border-radius: 16px;">
                 <div class="card-body p-4">
-                    <div class="d-flex align-items-center gap-4">
-                        <div class="bg-danger-light text-danger p-4 rounded-4">
+                    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-4">
+                        <div class="bg-danger-light text-danger p-4 rounded-4 mx-auto mx-sm-0">
                             <i class="fas fa-minus-circle fs-3"></i>
                         </div>
-                        <div>
+                        <div class="text-center text-sm-start w-100">
                             <h3 class="h5 fw-bold text-dark mb-1">Stock Outbound</h3>
                             <p class="text-muted small mb-3">Issue stock for sales, damage or internal use.</p>
-                            <button class="btn btn-danger btn-sm px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#stockOutModal">
+                            <button class="btn btn-danger btn-sm px-4 fw-bold w-100 w-sm-auto" data-bs-toggle="modal" data-bs-target="#stockOutModal">
                                 <i class="fas fa-arrow-up me-2"></i>Process Stock Out
                             </button>
                         </div>
@@ -91,17 +91,18 @@
     <!-- History Table -->
     <div class="card border-0 shadow-sm" style="border-radius: 16px;">
         <div class="card-header bg-white py-4 px-4 border-0">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <h3 class="h5 fw-bold text-dark mb-0">Transaction Audit Trail</h3>
-                <div class="dropdown">
-                    <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-filter me-2"></i>Filter
+                <div class="btn-group shadow-sm rounded-3 overflow-hidden">
+                    <button type="button" class="btn btn-light btn-sm filter-btn active fw-bold px-3 border" data-filter="all">
+                        <i class="fas fa-list me-1"></i> All
                     </button>
-                    <ul class="dropdown-menu shadow border-0" id="transaction-filter">
-                        <li><a class="dropdown-item filter-btn fw-bold bg-light" href="#" data-filter="all">All Transactions</a></li>
-                        <li><a class="dropdown-item text-success filter-btn" href="#" data-filter="in">Stock In Only</a></li>
-                        <li><a class="dropdown-item text-danger filter-btn" href="#" data-filter="out">Stock Out Only</a></li>
-                    </ul>
+                    <button type="button" class="btn btn-light btn-sm filter-btn px-3 border text-success" data-filter="in">
+                        <i class="fas fa-arrow-down me-1"></i> In
+                    </button>
+                    <button type="button" class="btn btn-light btn-sm filter-btn px-3 border text-danger" data-filter="out">
+                        <i class="fas fa-arrow-up me-1"></i> Out
+                    </button>
                 </div>
             </div>
         </div>
@@ -324,21 +325,20 @@ $(document).ready(function() {
     handleTransactionSubmit('stock-in-form', 'submit-in-btn', 'stockInModal');
     handleTransactionSubmit('stock-out-form', 'submit-out-btn', 'stockOutModal');
 
-    // Transaction Filtering Logic
-    $('.filter-btn').on('click', function(e) {
-        e.preventDefault();
-        const filter = $(this).data('filter');
+    // Simple Button Filter Logic
+    $(document).on('click', '.filter-btn', function() {
+        var filter = $(this).attr('data-filter');
         
-        // Update active state styling
-        $('.filter-btn').removeClass('fw-bold bg-light');
-        $(this).addClass('fw-bold bg-light');
+        // Update active class
+        $('.filter-btn').removeClass('active fw-bold bg-primary text-white').addClass('btn-light');
+        $(this).addClass('active fw-bold bg-primary text-white').removeClass('btn-light');
 
-        // Filter rows
+        // Apply filter
         if (filter === 'all') {
-            $('.transaction-row').fadeIn(200);
+            $('.transaction-row').show();
         } else {
             $('.transaction-row').hide();
-            $(`.transaction-row[data-type="${filter}"]`).fadeIn(200);
+            $(`.transaction-row[data-type="${filter}"]`).show();
         }
     });
 });

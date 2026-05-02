@@ -18,6 +18,7 @@ class Inventory extends Model
         'stock_quantity',
         'low_stock_threshold',
         'selling_price',
+        'purchase_price',
         'unit'
     ];
 

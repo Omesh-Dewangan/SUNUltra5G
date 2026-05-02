@@ -32,13 +32,15 @@
 </style>
 <div class="row align-items-center mb-4 g-3">
     <div class="col-12 col-md-6">
-        <h1 class="h3 fw-bold text-dark mb-1">New Sales Order</h1>
-        <p class="text-muted mb-0">Fill in customer details and add products.</p>
-    </div>
-    <div class="col-12 col-md-6 text-md-end">
-        <a href="{{ route('sales.index') }}" class="btn btn-outline-secondary px-4">
-            <i class="fas fa-arrow-left me-2"></i>Back
-        </a>
+        <div class="d-flex align-items-center">
+            <a href="{{ route('sales.index') }}" class="text-muted back-btn-minimal me-2">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="h3 fw-bold text-dark mb-1">New Sales Order</h1>
+                <p class="text-muted mb-0">Fill in customer details and add products.</p>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -61,6 +63,15 @@
                     <div class="col-12 col-md-6">
                         <label class="form-label small fw-bold text-muted text-uppercase">Address</label>
                         <input type="text" name="customer_address" id="customer_address" class="form-control px-3 py-2" placeholder="City / Area">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Payment Mode</label>
+                        <select name="payment_mode" id="payment_mode" class="form-select px-3 py-2">
+                            <option value="Cash">Cash</option>
+                            <option value="UPI">UPI/Digital</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Credit">Credit/Later</option>
+                        </select>
                     </div>
                     <div class="col-12">
                         <label class="form-label small fw-bold text-muted text-uppercase">Notes</label>
@@ -308,6 +319,7 @@ function submitOrder() {
             customer_name:    customerName,
             customer_phone:   $('#customer_phone').val(),
             customer_address: $('#customer_address').val(),
+            payment_mode:     $('#payment_mode').val(),
             notes:            $('#notes').val(),
             items:            items
         }),

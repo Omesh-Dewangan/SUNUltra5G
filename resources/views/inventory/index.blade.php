@@ -3,10 +3,16 @@
 @section('title', 'Inventory Management')
 
 @section('content')
-<div class="row align-items-center mb-4 g-3">
-    <div class="col-12 col-md-6">
-        <h1 class="h3 fw-bold text-dark mb-1">Inventory Management</h1>
-        <p class="text-muted mb-0">Wires, Lights & Stock Levels.</p>
+<div class="content-header">
+    <div class="w-100">
+        <span class="breadcrumb-item">Warehouse / Stock Control</span>
+        <div class="d-flex align-items-center">
+            <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2" title="Back to Dashboard">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="page-title">Inventory Management</h1>
+        </div>
+        <p class="page-subtitle ms-md-4 ps-md-2">Live monitoring of Wires, Lights & Stock Levels.</p>
     </div>
 </div>
 

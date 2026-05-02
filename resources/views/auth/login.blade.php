@@ -96,6 +96,25 @@
             font-size: 20px;
         }
     }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #999;
+        z-index: 10;
+        transition: color 0.3s;
+    }
+
+    .toggle-password:hover {
+        color: var(--primary-color);
+    }
 </style>
 @endsection
 
@@ -124,7 +143,10 @@
                     <label for="password" style="margin: 0;">Password</label>
                     <a href="{{ route('password.request') }}" style="font-size: 13px; color: var(--primary-color); text-decoration: none; font-weight: 500; border: none; outline: none;">Forgot Password?</a>
                 </div>
-                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                    <i class="fas fa-eye toggle-password" id="eye-icon"></i>
+                </div>
             </div>
 
             <button type="submit" id="submit-btn" class="btn login-btn">Login Now</button>
@@ -140,6 +162,20 @@
 @section('scripts')
 <script>
     $(document).ready(function() {
+        // Toggle Password Visibility
+        $('.toggle-password').on('click', function() {
+            const input = $('#password');
+            const icon = $(this);
+            
+            if (input.attr('type') === 'password') {
+                input.attr('type', 'text');
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                input.attr('type', 'password');
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        });
+
         $('#login-form').on('submit', function(e) {
             e.preventDefault();
             

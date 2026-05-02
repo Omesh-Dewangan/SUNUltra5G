@@ -5,10 +5,20 @@
 @section('content')
 <div class="row align-items-center mb-4 g-3">
     <div class="col-12 col-md-6">
-        <h1 class="h3 fw-bold text-dark mb-1">Unit Master</h1>
-        <p class="text-muted mb-0">Manage units of measurement for products.</p>
+        <div class="d-flex align-items-center">
+            <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="h3 fw-bold text-dark mb-1">Unit Master</h1>
+                <p class="text-muted mb-0">Manage units of measurement for products.</p>
+            </div>
+        </div>
     </div>
     <div class="col-12 col-md-6 text-md-end">
+        <button onclick="$('#import-unit-modal').modal('show')" class="btn btn-outline-primary px-4 fw-bold me-2">
+            <i class="fas fa-file-import me-2"></i>Import CSV
+        </button>
         <button onclick="$('#add-unit-form')[0].reset(); $('#add-unit-modal').modal('show')" class="btn btn-primary px-4 fw-bold">
             <i class="fas fa-plus me-2"></i>Add Unit
         </button>
@@ -119,6 +129,41 @@
         </div>
     </div>
 </div>
+
+<!-- Import Unit Modal -->
+<div class="modal fade" id="import-unit-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold">Import Units from CSV</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="import-unit-form" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="alert alert-info small border-0 shadow-none mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold"><i class="fas fa-info-circle me-1"></i> CSV Format:</span>
+                            <a href="{{ route('master.units.sample') }}" class="btn btn-xs btn-primary py-0 px-2 fw-bold" style="font-size: 10px;">
+                                <i class="fas fa-download me-1"></i> Download Sample
+                            </a>
+                        </div>
+                        Name, Short Name<br>
+                        <span class="text-muted opacity-75">Example: Piece, PCS</span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Select CSV File</label>
+                        <input type="file" name="csv_file" class="form-control px-3 py-2" accept=".csv" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 p-4 pt-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="import-unit-btn" class="btn btn-primary px-4 fw-bold">Upload & Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -176,6 +221,36 @@ $(document).ready(function() {
             error: function(xhr) {
                 const msg = xhr.responseJSON?.message || 'Error updating unit.';
                 Swal.fire({ icon: 'error', title: 'Oops...', text: msg });
+                btn.prop('disabled', false).text(oldText);
+            }
+        });
+    });
+
+    $('#import-unit-form').on('submit', function(e) {
+        e.preventDefault();
+        const btn = $('#import-unit-btn');
+        const oldText = btn.text();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Processing...');
+
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: "{{ route('master.units.import') }}",
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Imported!',
+                    text: response.message,
+                    showConfirmButton: true
+                }).then(() => location.reload());
+            },
+            error: function(xhr) {
+                const msg = xhr.responseJSON?.message || 'Error importing units.';
+                Swal.fire({ icon: 'error', title: 'Import Failed', text: msg });
                 btn.prop('disabled', false).text(oldText);
             }
         });

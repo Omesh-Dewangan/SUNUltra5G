@@ -67,50 +67,40 @@
 <div class="forgot-container">
     <div class="forgot-card">
         <div class="forgot-header">
-            <img src="{{ asset('assets/images/logo.svg') }}" alt="SUNUltra 5G" style="height: 50px; margin-bottom: 15px; width: auto;">
-            <h2>Reset Password</h2>
-            <p style="color: var(--secondary-color); font-size: 14px;">Enter your email to receive a password reset link.</p>
+            <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+                <img src="{{ asset('assets/images/logo.svg') }}" alt="SUNUltra 5G" style="height: 50px; width: auto; max-width: 100%;">
+            </div>
+            <h2>Forgot Password?</h2>
+            <p style="color: var(--secondary-color); font-size: 14px;">Here's how to recover your account access.</p>
         </div>
 
-        <div id="status-msg" style="display: none; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;"></div>
-
-        <form id="forgot-form">
-            @csrf
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" class="form-control" placeholder="your@email.com" required>
+        {{-- Step 1: Try changing via Account Settings --}}
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 18px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <div style="background: #22c55e; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;">1</div>
+                <div>
+                    <p style="font-weight: 700; font-size: 14px; margin: 0 0 4px; color: #15803d;">Remember your password?</p>
+                    <p style="font-size: 13px; color: #166534; margin: 0;">Login and go to <strong>Account Settings → Change Password</strong>. You will need your current password to set a new one.</p>
+                </div>
             </div>
+        </div>
 
-            <button type="submit" id="submit-btn" class="btn" style="width: 100%;">Send Reset Link</button>
-        </form>
+        {{-- Step 2: Contact Admin --}}
+        <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 18px; margin-bottom: 24px;">
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <div style="background: #f59e0b; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;">2</div>
+                <div>
+                    <p style="font-weight: 700; font-size: 14px; margin: 0 0 4px; color: #92400e;">Forgot your current password?</p>
+                    <p style="font-size: 13px; color: #78350f; margin: 0;">Contact your <strong>System Administrator</strong>. They can reset your password directly from the <strong>System Control → User Access</strong> panel.</p>
+                </div>
+            </div>
+        </div>
 
-        <div style="text-align: center; margin-top: 25px;">
+        <div style="text-align: center;">
             <a href="{{ route('login') }}" style="color: var(--primary-color); text-decoration: none; font-size: 14px; font-weight: 600;">
                 <i class="fas fa-arrow-left"></i> Back to Login
             </a>
         </div>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-    $(document).ready(function() {
-        $('#forgot-form').on('submit', function(e) {
-            e.preventDefault();
-            const btn = $('#submit-btn');
-            const msg = $('#status-msg');
-            
-            btn.text('Processing...').prop('disabled', true);
-            msg.hide();
-
-            // Simulate sending reset link
-            setTimeout(() => {
-                msg.text('A password reset link has been sent to your email address.')
-                   .css({'background': '#d1fae5', 'color': '#065f46', 'display': 'block'});
-                btn.text('Link Sent').prop('disabled', false);
-            }, 1500);
-        });
-    });
-</script>
 @endsection

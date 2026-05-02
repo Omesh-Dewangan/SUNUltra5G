@@ -4,9 +4,15 @@
 
 @section('content')
 <div class="content-header">
-    <div>
-        <h1 class="page-title">Dealers Management</h1>
-        <p class="page-subtitle">Manage your distributors, wholesalers, and retail partners</p>
+    <div class="w-100">
+        <span class="breadcrumb-item">Administration / Partners</span>
+        <div class="d-flex align-items-center">
+            <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2" title="Back to Dashboard">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="page-title">Dealers Management</h1>
+        </div>
+        <p class="page-subtitle ms-md-4 ps-md-2">Manage your distributors, wholesalers, and retail partners</p>
     </div>
     <button class="btn btn-primary" onclick="openCreateModal()">
         <i class="fas fa-plus"></i> Add New Dealer

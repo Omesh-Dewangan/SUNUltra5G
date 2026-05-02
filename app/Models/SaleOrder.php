@@ -18,6 +18,7 @@ class SaleOrder extends Model
         'customer_address',
         'status',
         'total_amount',
+        'payment_mode',
         'notes',
         'created_by',
     ];

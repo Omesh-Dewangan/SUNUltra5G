@@ -62,7 +62,7 @@
             <div class="row g-3">
                 @foreach($permissions as $permission)
                 <div class="col-12 col-md-6 col-xl-4">
-                    <label class="permission-card d-flex align-items-center gap-3 p-3 rounded-4 border bg-light-subtle h-100 cursor-pointer transition-all hover-shadow">
+                    <label class="permission-card d-flex align-items-center gap-3 p-3 rounded-4 border h-100 cursor-pointer transition-all hover-shadow">
                         <input type="checkbox" class="permission-checkbox form-check-input flex-shrink-0 m-0" value="{{ $permission->id }}">
                         <div class="min-w-0">
                             <div class="fw-bold small text-dark text-truncate">{{ $permission->name }}</div>
@@ -146,14 +146,17 @@
 
 <style>
     .role-selector-btn {
-        background: white;
-        border-color: var(--border-color);
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         color: var(--text-dark);
         transition: all 0.2s ease;
     }
     .role-selector-btn:hover {
-        background: #f8fafc;
+        background: rgba(0,0,0,0.02);
         border-color: #cbd5e1;
+    }
+    [data-theme="dark"] .role-selector-btn:hover {
+        background: rgba(255,255,255,0.05);
     }
     .role-selector-btn.active {
         background: var(--primary-blue) !important;
@@ -162,12 +165,16 @@
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     }
     .permission-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         transition: all 0.2s ease;
     }
     .permission-card:hover {
-        background: white !important;
         border-color: var(--primary-blue) !important;
         transform: translateY(-2px);
+    }
+    [data-theme="dark"] .permission-card:hover {
+        background: rgba(255,255,255,0.02) !important;
     }
     .letter-spacing-1 { letter-spacing: 1px; }
     .hover-shadow:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.05); }

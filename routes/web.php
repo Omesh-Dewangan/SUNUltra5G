@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -23,8 +24,12 @@ Route::middleware('auth')->group(function() {
 
     // RBAC Management (Super Admin only)
     Route::middleware('role:super_admin')->prefix('rbac')->name('rbac.')->group(function() {
+        Route::get('/superadmin-report', [DashboardController::class, 'superadminReport'])->name('superadmin_report');
+        
         Route::get('/users', [RBACController::class, 'userRolesIndex'])->name('users');
         Route::post('/users', [RBACController::class, 'storeUser'])->name('users.store');
+        Route::put('/users/{id}', [RBACController::class, 'updateUser'])->name('users.update');
+        Route::delete('/users/{id}', [RBACController::class, 'destroyUser'])->name('users.destroy');
         Route::post('/users/assign', [RBACController::class, 'assignRole'])->name('users.assign');
         
         Route::get('/roles', [RBACController::class, 'rolePermissionsIndex'])->name('roles');
@@ -37,10 +42,12 @@ Route::middleware('auth')->group(function() {
     // Sales Orders
     Route::middleware('permission:manage_orders')->prefix('sales')->name('sales.')->group(function() {
         Route::get('/', [SaleOrderController::class, 'index'])->name('index');
+        Route::get('/export', [SaleOrderController::class, 'exportCSV'])->name('export');
         Route::get('/create', [SaleOrderController::class, 'create'])->name('create');
         Route::post('/store', [SaleOrderController::class, 'store'])->name('store');
         Route::get('/product/{id}/price', [SaleOrderController::class, 'getProductPrice'])->name('product.price');
         Route::get('/{id}', [SaleOrderController::class, 'show'])->name('show');
+        Route::get('/{id}/print', [SaleOrderController::class, 'printInvoice'])->name('print');
         Route::post('/{id}/confirm', [SaleOrderController::class, 'confirm'])->name('confirm');
         Route::post('/{id}/dispatch', [SaleOrderController::class, 'dispatch'])->name('dispatch');
         Route::post('/{id}/cancel', [SaleOrderController::class, 'cancel'])->name('cancel');
@@ -50,6 +57,16 @@ Route::middleware('auth')->group(function() {
     Route::middleware('permission:manage_inventory')->prefix('inventory')->name('inventory.')->group(function() {
         Route::get('/', [InventoryController::class, 'index'])->name('index');
         Route::post('/adjust-stock', [InventoryController::class, 'adjustStock'])->name('adjust_stock');
+
+        // Audit Sub-module
+        Route::prefix('audit')->name('audit.')->group(function() {
+            Route::get('/', [AuditController::class, 'index'])->name('index');
+            Route::get('/create', [AuditController::class, 'create'])->name('create');
+            Route::post('/store', [AuditController::class, 'store'])->name('store');
+            Route::get('/{id}', [AuditController::class, 'show'])->name('show');
+            Route::post('/{id}/items', [AuditController::class, 'updateItems'])->name('items.update');
+            Route::post('/{id}/approve', [AuditController::class, 'approve'])->name('approve');
+        });
     });
 
     // Master Management
@@ -71,6 +88,16 @@ Route::middleware('auth')->group(function() {
         Route::get('/products-export', [MasterController::class, 'exportProductsCSV'])->name('products.export');
         Route::get('/products/{id}/stock', [MasterController::class, 'productStockIndex'])->name('products.stock');
         Route::post('/products/{id}/stock', [MasterController::class, 'storeStockTransaction'])->name('products.stock.store');
+
+        // CSV Import Routes
+        Route::post('/categories/import', [MasterController::class, 'importCategories'])->name('categories.import');
+        Route::get('/categories/sample', [MasterController::class, 'downloadCategorySample'])->name('categories.sample');
+        
+        Route::post('/units/import', [MasterController::class, 'importUnits'])->name('units.import');
+        Route::get('/units/sample', [MasterController::class, 'downloadUnitSample'])->name('units.sample');
+        
+        Route::post('/products/import', [MasterController::class, 'importProducts'])->name('products.import');
+        Route::get('/products/sample', [MasterController::class, 'downloadProductSample'])->name('products.sample');
     });
 
     // Dealer Management

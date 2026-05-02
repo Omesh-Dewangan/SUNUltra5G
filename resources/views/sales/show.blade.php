@@ -60,7 +60,7 @@
 <!-- Top Bar -->
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 no-print">
     <div class="d-flex align-items-center gap-3">
-        <a href="{{ route('sales.index') }}" class="btn btn-outline-secondary back-btn">
+        <a href="{{ route('sales.index') }}" class="text-muted back-btn-minimal me-2">
             <i class="fas fa-arrow-left"></i>
         </a>
         <div>
@@ -92,9 +92,9 @@
         </button>
         @endif
         
-        <button onclick="window.print()" class="btn btn-light border flex-fill flex-md-grow-0">
+        <a href="{{ route('sales.print', encrypt($order->id)) }}" target="_blank" class="btn btn-light border flex-fill flex-md-grow-0">
             <i class="fas fa-print me-2"></i>Print
-        </button>
+        </a>
     </div>
 </div>
 
@@ -147,7 +147,7 @@
                 </div>
                 <div class="d-flex justify-content-between">
                     <span class="small">Payment Mode:</span>
-                    <span class="small fw-bold text-dark">Cash/UPI</span>
+                    <span class="small fw-bold text-dark">{{ $order->payment_mode ?? 'Cash' }}</span>
                 </div>
             </div>
         </div>

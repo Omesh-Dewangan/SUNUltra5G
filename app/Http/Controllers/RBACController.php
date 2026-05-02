@@ -9,9 +9,12 @@ use App\Services\RBACService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Exception;
+use App\Traits\LogsActivity;
 
 class RBACController extends Controller
 {
+    use LogsActivity;
+
     protected $rbacService;
     protected $roleRepository;
     protected $permissionRepository;
@@ -66,6 +69,8 @@ class RBACController extends Controller
                 $this->rbacService->assignUserRole($user->id, $request->role_id);
             }
 
+            $this->logActivity('CREATE_USER', 'User', $user->id, ['email' => $user->email]);
+
             return response()->json([
                 'status' => true,
                 'message' => 'User created successfully!'
@@ -75,6 +80,64 @@ class RBACController extends Controller
                 'status' => false,
                 'message' => 'Failed to create user: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Update User (AJAX)
+     */
+    public function updateUser(Request $request, $id): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,'.$id,
+            'password' => 'nullable|string|min:8',
+        ]);
+
+        try {
+            $user = \App\Models\User::findOrFail($id);
+            $user->name = $request->name;
+            $user->email = $request->email;
+            
+            if ($request->filled('password')) {
+                $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
+            }
+            $user->save();
+
+            $this->logActivity('UPDATE_USER', 'User', $id, ['email' => $user->email]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User details updated successfully!'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update user: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete User (AJAX)
+     */
+    public function destroyUser($id): JsonResponse
+    {
+        try {
+            $user = \App\Models\User::findOrFail($id);
+            
+            if ($user->id === auth()->id()) {
+                return response()->json(['status' => false, 'message' => 'Cannot delete your own active account.'], 403);
+            }
+            if ($user->hasRole('super_admin')) {
+                return response()->json(['status' => false, 'message' => 'Cannot delete a super admin.'], 403);
+            }
+
+            $this->logActivity('DELETE_USER', 'User', $id, ['email' => $user->email]);
+            $user->delete();
+            return response()->json(['status' => true, 'message' => 'User deleted successfully!']);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => 'Failed to delete user: ' . $e->getMessage()], 500);
         }
     }
 
@@ -90,6 +153,8 @@ class RBACController extends Controller
 
         try {
             $this->rbacService->assignUserRole($request->user_id, $request->role_id);
+            $this->logActivity('ASSIGN_ROLE', 'User', $request->user_id, ['role_id' => $request->role_id]);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Role assigned successfully!'
@@ -126,6 +191,8 @@ class RBACController extends Controller
 
         try {
             $this->rbacService->syncRolePermissions($request->role_id, $request->permissions ?? []);
+            $this->logActivity('SYNC_PERMISSIONS', 'Role', $request->role_id, ['count' => count($request->permissions ?? [])]);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Permissions updated successfully!'
@@ -150,7 +217,9 @@ class RBACController extends Controller
         ]);
 
         try {
-            $this->roleRepository->create($request->only(['name', 'slug', 'description']));
+            $role = $this->roleRepository->create($request->only(['name', 'slug', 'description']));
+            $this->logActivity('CREATE_ROLE', 'Role', $role->id, ['name' => $role->name]);
+
             return response()->json(['status' => true, 'message' => 'Role created successfully!']);
         } catch (Exception $e) {
             return response()->json(['status' => false, 'message' => 'Failed to create role.'], 500);
@@ -170,6 +239,8 @@ class RBACController extends Controller
 
         try {
             $this->roleRepository->update($id, $request->only(['name', 'slug', 'description']));
+            $this->logActivity('UPDATE_ROLE', 'Role', $id, ['name' => $request->name]);
+
             return response()->json(['status' => true, 'message' => 'Role updated successfully!']);
         } catch (Exception $e) {
             return response()->json(['status' => false, 'message' => 'Failed to update role.'], 500);
@@ -188,6 +259,7 @@ class RBACController extends Controller
                 return response()->json(['status' => false, 'message' => 'Cannot delete critical system roles.'], 403);
             }
 
+            $this->logActivity('DELETE_ROLE', 'Role', $id, ['name' => $role->name ?? 'Unknown']);
             $this->roleRepository->delete($id);
             return response()->json(['status' => true, 'message' => 'Role deleted successfully!']);
         } catch (Exception $e) {

@@ -4,12 +4,21 @@
 
 @section('content')
 <!-- Header Section -->
-<div class="row align-items-center mb-4 g-3">
-    <div class="col-12 col-md-6">
-        <h1 class="h3 fw-bold text-dark mb-1">Sales Orders</h1>
-        <p class="text-muted mb-0">Manage and track all customer orders.</p>
+<div class="content-header">
+    <div class="w-100">
+        <span class="breadcrumb-item">Sales / Order Management</span>
+        <div class="d-flex align-items-center">
+            <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2" title="Back to Dashboard">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="page-title">Sales Orders</h1>
+        </div>
+        <p class="page-subtitle ms-md-4 ps-md-2">Track, manage and process customer sales orders.</p>
     </div>
-    <div class="col-12 col-md-6 text-md-end">
+    <div class="col-12 col-md-6 text-md-end d-flex justify-content-md-end gap-2">
+        <a href="{{ route('sales.export', request()->query()) }}" class="btn btn-outline-secondary px-4 py-2 rounded-3 shadow-sm bg-white">
+            <i class="fas fa-file-csv me-2"></i>Export Report
+        </a>
         <a href="{{ route('sales.create') }}" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm">
             <i class="fas fa-plus me-2"></i>New Order
         </a>

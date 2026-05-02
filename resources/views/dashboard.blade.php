@@ -5,14 +5,19 @@
 @section('content')
 <div class="container-fluid p-0">
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+        <div class="w-100">
             <h1 class="h3 fw-bold text-dark mb-1">System Overview</h1>
             <p class="text-muted small mb-0">Real-time analytics and inventory control panel.</p>
         </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-white shadow-sm border text-muted small"><i class="fas fa-download me-2"></i>Export Report</button>
-            <a href="{{ route('sales.index') }}" class="btn btn-primary shadow-sm small px-4 fw-bold">New Sales Order</a>
+        <div class="d-flex flex-wrap gap-2 w-100 w-md-auto justify-content-start justify-content-md-end">
+            @if(Auth::user()->hasRole('super_admin'))
+            <a href="{{ route('rbac.superadmin_report') }}" class="btn btn-dark shadow-sm small px-3 fw-bold flex-fill flex-md-grow-0">
+                <i class="fas fa-chart-pie me-2"></i>Project Report
+            </a>
+            @endif
+            <button class="btn btn-white shadow-sm border text-muted small flex-fill flex-md-grow-0"><i class="fas fa-download me-2"></i>Export Report</button>
+            <a href="{{ route('sales.index') }}" class="btn btn-primary shadow-sm small px-4 fw-bold flex-fill flex-md-grow-0">New Sales Order</a>
         </div>
     </div>
 
@@ -248,8 +253,122 @@
             </div>
         </div>
     </div>
+
+    <!-- Sales Orders Overview - News Feed Style -->
+    <div class="row g-4 mt-0 mb-4">
+        <div class="col-12">
+            <div class="data-card border-0 shadow-sm">
+                <!-- Header -->
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+                    <div>
+                        <h3 class="h6 fw-bold text-dark mb-1 text-uppercase letter-spacing-1">
+                            <i class="fas fa-receipt text-primary me-2"></i>Sales Orders Live Feed
+                        </h3>
+                        <p class="extra-small text-muted mb-0">Real-time order status across all stages</p>
+                    </div>
+                    <a href="{{ route('sales.index') }}" class="btn btn-primary btn-sm px-4 fw-bold flex-shrink-0">
+                        <i class="fas fa-plus me-1"></i> New Order
+                    </a>
+                </div>
+
+                <!-- Status Count Pills -->
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <a href="{{ route('sales.index') }}" class="text-decoration-none">
+                        <span class="badge rounded-pill px-3 py-2 fw-semibold" style="background:#f1f5f9; color:#64748b; font-size:12px;">
+                            All &nbsp;<strong>{{ array_sum($orderStatusCounts) }}</strong>
+                        </span>
+                    </a>
+                    <span class="badge rounded-pill px-3 py-2 fw-semibold" style="background:#fef9c3; color:#a16207; font-size:12px;">
+                        <i class="fas fa-pencil-alt me-1" style="font-size:9px;"></i>Draft &nbsp;<strong>{{ $orderStatusCounts['draft'] }}</strong>
+                    </span>
+                    <span class="badge rounded-pill px-3 py-2 fw-semibold" style="background:#dbeafe; color:#1d4ed8; font-size:12px;">
+                        <i class="fas fa-check me-1" style="font-size:9px;"></i>Confirmed &nbsp;<strong>{{ $orderStatusCounts['confirmed'] }}</strong>
+                    </span>
+                    <span class="badge rounded-pill px-3 py-2 fw-semibold" style="background:#dcfce7; color:#16a34a; font-size:12px;">
+                        <i class="fas fa-truck me-1" style="font-size:9px;"></i>Dispatched &nbsp;<strong>{{ $orderStatusCounts['dispatched'] }}</strong>
+                    </span>
+                    <span class="badge rounded-pill px-3 py-2 fw-semibold" style="background:#f3e8ff; color:#7c3aed; font-size:12px;">
+                        <i class="fas fa-star me-1" style="font-size:9px;"></i>Completed &nbsp;<strong>{{ $orderStatusCounts['completed'] }}</strong>
+                    </span>
+                    <span class="badge rounded-pill px-3 py-2 fw-semibold" style="background:#fee2e2; color:#dc2626; font-size:12px;">
+                        <i class="fas fa-times me-1" style="font-size:9px;"></i>Cancelled &nbsp;<strong>{{ $orderStatusCounts['cancelled'] }}</strong>
+                    </span>
+                </div>
+
+                <!-- Recent Orders Feed -->
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr class="extra-small text-muted text-uppercase">
+                                <th class="border-0 py-3 ps-3">Order #</th>
+                                <th class="border-0 py-3">Customer</th>
+                                <th class="border-0 py-3 text-center">Items</th>
+                                <th class="border-0 py-3 text-end">Total</th>
+                                <th class="border-0 py-3 text-center">Status</th>
+                                <th class="border-0 py-3 text-end pe-3">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentOrders as $order)
+                            @php
+                                $statusConfig = [
+                                    'draft'      => ['bg'=>'#fef9c3','color'=>'#a16207','icon'=>'pencil-alt','label'=>'Draft'],
+                                    'confirmed'  => ['bg'=>'#dbeafe','color'=>'#1d4ed8','icon'=>'check','label'=>'Confirmed'],
+                                    'dispatched' => ['bg'=>'#dcfce7','color'=>'#16a34a','icon'=>'truck','label'=>'Dispatched'],
+                                    'completed'  => ['bg'=>'#f3e8ff','color'=>'#7c3aed','icon'=>'star','label'=>'Completed'],
+                                    'cancelled'  => ['bg'=>'#fee2e2','color'=>'#dc2626','icon'=>'times','label'=>'Cancelled'],
+                                ];
+                                $cfg = $statusConfig[$order->status] ?? ['bg'=>'#f1f5f9','color'=>'#64748b','icon'=>'circle','label'=>ucfirst($order->status)];
+                            @endphp
+                            <tr>
+                                <td class="ps-3 py-3">
+                                    <a href="{{ route('sales.show', $order->id) }}" class="fw-bold small text-primary text-decoration-none">
+                                        #{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}
+                                    </a>
+                                </td>
+                                <td class="py-3">
+                                    <div class="fw-semibold small text-dark">{{ $order->customer_name }}</div>
+                                    <div class="extra-small text-muted">{{ $order->customer_phone ?? '—' }}</div>
+                                </td>
+                                <td class="py-3 text-center">
+                                    <span class="badge bg-light text-dark border small">{{ $order->items_count ?? $order->items()->count() }} items</span>
+                                </td>
+                                <td class="py-3 text-end fw-bold small text-dark">
+                                    ₹{{ number_format($order->total_amount, 0) }}
+                                </td>
+                                <td class="py-3 text-center">
+                                    <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background:{{ $cfg['bg'] }}; color:{{ $cfg['color'] }}; font-size:11px;">
+                                        <i class="fas fa-{{ $cfg['icon'] }} me-1" style="font-size:9px;"></i>{{ $cfg['label'] }}
+                                    </span>
+                                </td>
+                                <td class="py-3 text-end pe-3 extra-small text-muted">
+                                    {{ $order->created_at->diffForHumans() }}
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <i class="fas fa-receipt text-muted fs-2 mb-2 d-block opacity-25"></i>
+                                    <p class="text-muted small mb-1">No orders found.</p>
+                                    <a href="{{ route('sales.create') }}" class="small text-primary fw-bold text-decoration-none">Create first order →</a>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                @if($recentOrders->count() > 0)
+                <div class="text-center mt-3">
+                    <a href="{{ route('sales.index') }}" class="btn btn-light btn-sm px-4 extra-small fw-bold">View All Orders <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
+
 
 @section('scripts')
 <script>

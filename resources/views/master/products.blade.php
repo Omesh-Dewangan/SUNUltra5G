@@ -3,13 +3,22 @@
 @section('title', 'Product Master')
 
 @section('content')
-<div class="row align-items-center mb-4 g-3">
-    <div class="col-12 col-md-6">
-        <h1 class="h3 fw-bold text-dark mb-1">Product Master</h1>
-        <p class="text-muted mb-0">Manage your product catalog and specifications.</p>
+<div class="content-header">
+    <div class="w-100">
+        <span class="breadcrumb-item">Master Data / Catalog</span>
+        <div class="d-flex align-items-center">
+            <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2" title="Back to Dashboard">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="page-title">Product Master</h1>
+        </div>
+        <p class="page-subtitle ms-md-4 ps-md-2">Manage your product catalog and specifications.</p>
     </div>
     <div class="col-12 col-md-6 text-md-end">
         <div class="d-flex flex-wrap justify-content-md-end gap-2">
+            <button onclick="$('#import-product-modal').modal('show')" class="btn btn-outline-primary px-3 fw-bold">
+                <i class="fas fa-file-import me-2"></i>Import CSV
+            </button>
             <a href="{{ route('master.products.export') }}" class="btn btn-success px-3 fw-bold">
                 <i class="fas fa-file-csv me-2"></i>Export CSV
             </a>
@@ -130,10 +139,22 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-12">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label class="form-label font-bold small text-muted">Wattage (Optional)</label>
                                 <input type="text" name="wattage" class="form-control" placeholder="e.g., 120W">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label font-bold small text-muted">Selling Price (₹)</label>
+                                <input type="number" name="selling_price" step="0.01" class="form-control" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label font-bold small text-muted">Low Stock Alert</label>
+                                <input type="number" name="low_stock_threshold" class="form-control" value="10" required>
                             </div>
                         </div>
                     </div>
@@ -208,10 +229,22 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-12">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label class="form-label font-bold small text-muted">Wattage (Optional)</label>
                                 <input type="text" name="wattage" id="edit_product_wattage" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label font-bold small text-muted">Selling Price (₹)</label>
+                                <input type="number" name="selling_price" id="edit_product_price" step="0.01" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label font-bold small text-muted">Low Stock Alert</label>
+                                <input type="number" name="low_stock_threshold" id="edit_product_threshold" class="form-control" required>
                             </div>
                         </div>
                     </div>
@@ -229,6 +262,41 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" id="update-product-btn" class="btn btn-primary">Update Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Import Product Modal -->
+<div class="modal fade" id="import-product-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold">Import Products from CSV</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="import-product-form" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="alert alert-info small border-0 shadow-none mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold"><i class="fas fa-info-circle me-1"></i> CSV Columns:</span>
+                            <a href="{{ route('master.products.sample') }}" class="btn btn-xs btn-primary py-0 px-2 fw-bold" style="font-size: 10px;">
+                                <i class="fas fa-download me-1"></i> Download Sample
+                            </a>
+                        </div>
+                        SKU Code, Name, Category Name, Unit, Wattage, Price, Threshold<br>
+                        <span class="text-muted opacity-75">Example: SU-L01, LED Bulb, LED Lights, Piece, 9W, 150, 20</span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Select CSV File</label>
+                        <input type="file" name="csv_file" class="form-control px-3 py-2" accept=".csv" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 p-4 pt-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="import-prod-btn" class="btn btn-primary px-4 fw-bold">Upload & Import</button>
                 </div>
             </form>
         </div>
@@ -349,6 +417,36 @@ $(document).ready(function() {
             }
         });
     });
+
+    $('#import-product-form').on('submit', function(e) {
+        e.preventDefault();
+        const btn = $('#import-prod-btn');
+        const oldText = btn.text();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Processing...');
+
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: "{{ route('master.products.import') }}",
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Imported!',
+                    text: response.message,
+                    showConfirmButton: true
+                }).then(() => location.reload());
+            },
+            error: function(xhr) {
+                const msg = xhr.responseJSON?.message || 'Error importing products.';
+                Swal.fire({ icon: 'error', title: 'Import Failed', text: msg });
+                btn.prop('disabled', false).text(oldText);
+            }
+        });
+    });
 });
 
 function editProduct(product) {
@@ -356,6 +454,8 @@ function editProduct(product) {
     $('#edit_product_code').val(product.code);
     $('#edit_product_name').val(product.name);
     $('#edit_product_wattage').val(product.wattage);
+    $('#edit_product_price').val(product.selling_price);
+    $('#edit_product_threshold').val(product.low_stock_threshold);
 
     // Set Select2 values
     $('#edit_product_category').val(product.category_id).trigger('change');

@@ -12,33 +12,62 @@ class DashboardController extends Controller
     public function index()
     {
         // 1. Calculate Stats
-        $totalLedSales = StockTransaction::where('type', 'out')
-            ->whereHas('inventory', function($q) {
-                $q->whereHas('category', function($cat) {
-                    $cat->where('name', 'like', '%LED%');
-                });
-            })->sum('quantity');
+        // Monthly LED Sales (Revenue)
+        $ledSalesThisMonth = \App\Models\SaleOrderItem::whereHas('inventory.category', function($q) {
+                $q->where('name', 'like', '%LED%');
+            })
+            ->whereHas('saleOrder', function($q) {
+                $q->where('status', '!=', 'cancelled')
+                  ->whereMonth('created_at', now()->month)
+                  ->whereYear('created_at', now()->year);
+            })->sum('total_price');
 
+        $ledSalesLastMonth = \App\Models\SaleOrderItem::whereHas('inventory.category', function($q) {
+                $q->where('name', 'like', '%LED%');
+            })
+            ->whereHas('saleOrder', function($q) {
+                $q->where('status', '!=', 'cancelled')
+                  ->whereMonth('created_at', now()->subMonth()->month)
+                  ->whereYear('created_at', now()->subMonth()->year);
+            })->sum('total_price');
+
+        $totalLedSales = $ledSalesThisMonth;
+        $ledTrend = $ledSalesLastMonth > 0 ? round((($ledSalesThisMonth - $ledSalesLastMonth) / $ledSalesLastMonth) * 100) : ($ledSalesThisMonth > 0 ? 100 : 0);
+
+        // Wire Stock
         $wireStock = Inventory::whereHas('category', function($q) {
                 $q->where('name', 'like', '%Cable%')->orWhere('name', 'like', '%Wire%');
             })->sum('stock_quantity');
 
-        $totalOrdersCount = StockTransaction::where('type', 'out')->count();
-        $activeDealersCount = 12; // Static for now
+        // Total Orders (Last 30 Days)
+        $totalOrdersCount = \App\Models\SaleOrder::where('created_at', '>=', now()->subDays(30))->count();
 
-        // 3. Dynamic Sub-labels
-        $ledTrend = "Updated today"; 
+        // Order Status Breakdown
+        $orderStatusCounts = [
+            'draft'      => \App\Models\SaleOrder::where('status', 'draft')->count(),
+            'confirmed'  => \App\Models\SaleOrder::where('status', 'confirmed')->count(),
+            'dispatched' => \App\Models\SaleOrder::where('status', 'dispatched')->count(),
+            'completed'  => \App\Models\SaleOrder::where('status', 'completed')->count(),
+            'cancelled'  => \App\Models\SaleOrder::where('status', 'cancelled')->count(),
+        ];
+
+        // Recent 6 Orders (with items count)
+        $recentOrders = \App\Models\SaleOrder::withCount('items')
+            ->orderBy('created_at', 'desc')->take(6)->get();
         
+        // Dealers
+        $activeDealersCount = \App\Models\Dealer::where('is_active', true)->count();
+        $dealerStatus = \App\Models\Dealer::where('is_active', false)->count();
+
+        // Low Stock Analysis
         $lowStockCount = Inventory::whereColumn('stock_quantity', '<=', 'low_stock_threshold')->count();
-        $wireStatus = $lowStockCount > 0 ? "$lowStockCount items low in stock" : "Stock sufficient";
+        $wireStatus = $lowStockCount > 0 ? "$lowStockCount items low in stock" : "Healthy";
         
         $lowStockItems = Inventory::whereColumn('stock_quantity', '<=', 'low_stock_threshold')
             ->with('category')
             ->orderBy('stock_quantity', 'asc')
             ->take(5)
             ->get();
-
-        $dealerStatus = "Across Chhattisgarh";
 
         // 4. Fetch Recent Transactions
         $recentTransactions = StockTransaction::with(['inventory.category'])
@@ -123,7 +152,66 @@ class DashboardController extends Controller
             'topSellingProducts',
             'categoryRevenue',
             'monthlyRevenueLabels',
-            'monthlyRevenueData'
+            'monthlyRevenueData',
+            'orderStatusCounts',
+            'recentOrders'
+        ));
+    }
+
+    /**
+     * Superadmin Comprehensive Report View
+     */
+    public function superadminReport()
+    {
+        // 1. Total System Valuation (Inventory Value)
+        $totalValuation = \App\Models\Inventory::sum(\DB::raw('stock_quantity * selling_price'));
+
+        // 2. All-Time Revenue (Completed/Dispatched Orders)
+        $allTimeRevenue = \App\Models\SaleOrder::whereIn('status', ['dispatched', 'completed'])->sum('total_amount');
+
+        // 3. Category Stock Distribution
+        $categoryStock = \App\Models\Category::withSum('inventories', 'stock_quantity')
+            ->get()
+            ->filter(fn($c) => $c->inventories_sum_stock_quantity > 0)
+            ->map(fn($c) => ['name' => $c->name, 'stock' => $c->inventories_sum_stock_quantity])
+            ->values();
+
+        // 4. User Performance (Orders Created by Users)
+        $userPerformance = \App\Models\User::withCount(['saleOrders' => function($q) {
+                $q->where('status', '!=', 'cancelled');
+            }])
+            ->withSum(['saleOrders' => function($q) {
+                $q->where('status', '!=', 'cancelled');
+            }], 'total_amount')
+            ->having('sale_orders_count', '>', 0)
+            ->orderBy('sale_orders_sum_total_amount', 'desc')
+            ->take(5)
+            ->get();
+
+        // 5. 12-Month Trend (Orders vs Revenue)
+        $trendLabels = [];
+        $trendOrders = [];
+        $trendRevenue = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $trendLabels[] = $date->format('M y');
+            
+            $monthData = \App\Models\SaleOrder::where('status', '!=', 'cancelled')
+                ->whereMonth('created_at', $date->month)
+                ->whereYear('created_at', $date->year);
+                
+            $trendOrders[] = (clone $monthData)->count();
+            $trendRevenue[] = (clone $monthData)->sum('total_amount');
+        }
+
+        return view('reports.superadmin', compact(
+            'totalValuation',
+            'allTimeRevenue',
+            'categoryStock',
+            'userPerformance',
+            'trendLabels',
+            'trendOrders',
+            'trendRevenue'
         ));
     }
 }
