@@ -91,7 +91,7 @@ class RBACController extends Controller
         $id = decrypt($encryptedId);
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$id,
+            'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|string|min:8',
         ]);
 
@@ -99,7 +99,7 @@ class RBACController extends Controller
             $user = \App\Models\User::findOrFail($id);
             $user->name = $request->name;
             $user->email = $request->email;
-            
+
             if ($request->filled('password')) {
                 $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
             }
@@ -127,7 +127,7 @@ class RBACController extends Controller
         try {
             $id = decrypt($encryptedId);
             $user = \App\Models\User::findOrFail($id);
-            
+
             if ($user->id === auth()->id()) {
                 return response()->json(['status' => false, 'message' => 'Cannot delete your own active account.'], 403);
             }
@@ -235,8 +235,8 @@ class RBACController extends Controller
     {
         $id = decrypt($encryptedId);
         $request->validate([
-            'name' => 'required|string|unique:roles,name,'.$id,
-            'slug' => 'required|string|unique:roles,slug,'.$id,
+            'name' => 'required|string|unique:roles,name,' . $id,
+            'slug' => 'required|string|unique:roles,slug,' . $id,
             'description' => 'nullable|string'
         ]);
 
@@ -269,16 +269,16 @@ class RBACController extends Controller
 
             // Capture full role data for reversion/reference in logs
             $logData = [
-                'name'        => $role->name,
-                'slug'        => $role->slug,
+                'name' => $role->name,
+                'slug' => $role->slug,
                 'description' => $role->description,
                 'permissions' => $role->permissions->pluck('name')->toArray(),
                 'permission_ids' => $role->permissions->pluck('id')->toArray(),
-                'deleted_at'  => now()->toDateTimeString()
+                'deleted_at' => now()->toDateTimeString()
             ];
 
             $this->logActivity('DELETE_ROLE', 'Role', $id, $logData);
-            
+
             $this->roleRepository->delete($id);
             return response()->json(['status' => true, 'message' => 'Role deleted successfully! Details backed up in activity logs.']);
         } catch (Exception $e) {
@@ -297,6 +297,7 @@ class RBACController extends Controller
 
         return view('rbac.logs', compact('logs'));
     }
+
 
     /**
      * Restore a deleted Resource (Role, Category, Unit, Product) from Log (AJAX)
@@ -336,8 +337,8 @@ class RBACController extends Controller
                         return response()->json(['status' => false, 'message' => 'A category with this slug already exists.'], 400);
                     }
                     $resource = \App\Models\Category::create([
-                        'name'        => $data['name'],
-                        'slug'        => $data['slug'] ?? \Illuminate\Support\Str::slug($data['name']),
+                        'name' => $data['name'],
+                        'slug' => $data['slug'] ?? \Illuminate\Support\Str::slug($data['name']),
                         'description' => $data['description'] ?? null
                     ]);
                     $message = "Category '{$resource->name}' restored!";
@@ -345,7 +346,7 @@ class RBACController extends Controller
 
                 case 'DELETE_UNIT':
                     $resource = \App\Models\Unit::create([
-                        'name'       => $data['name'],
+                        'name' => $data['name'],
                         'short_name' => $data['short_name'] ?? null
                     ]);
                     $message = "Unit '{$resource->name}' restored!";
