@@ -35,21 +35,33 @@
     }
 </style>
 <div class="data-card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h3 class="h6 fw-bold text-muted mb-0">Active System Users</h3>
         
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <div class="input-group" style="width: 250px;">
+        <div class="d-flex flex-grow-1 flex-md-grow-0 gap-2 align-items-center justify-content-between justify-content-md-end w-100 w-md-auto">
+            <div class="input-group" style="max-width: 250px; flex: 1;">
                 <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
                 <input type="text" class="form-control border-start-0 bg-light live-search-input" data-table="users-table" placeholder="Search users...">
             </div>
             
-            <button class="btn btn-primary fw-bold px-3" data-bs-toggle="modal" data-bs-target="#create-user-modal">
-                <i class="fas fa-user-plus me-2"></i>Create User
+            <button class="btn btn-primary fw-bold px-3 text-nowrap" data-bs-toggle="modal" data-bs-target="#create-user-modal">
+                <i class="fas fa-user-plus me-md-2"></i><span class="d-none d-md-inline">Create User</span>
             </button>
         </div>
     </div>
 
+    <style>
+        @media (max-width: 768px) {
+            .page-title { font-size: 20px !important; }
+            .page-subtitle { font-size: 12px !important; margin-left: 0 !important; padding-left: 0 !important; }
+            .role-assign-select { width: 120px !important; }
+            .data-card { padding: 15px !important; }
+        }
+        .table-responsive {
+            margin: 0 -15px;
+            padding: 0 15px;
+        }
+    </style>
     <div class="table-responsive">
         <table style="width: 100%; border-collapse: collapse; text-align: left;" id="users-table">
             <thead>
@@ -93,10 +105,10 @@
                     </td>
                     <td style="padding: 12px; text-align: right;">
                         <div class="d-flex justify-content-end gap-2">
-                            <button onclick="editUser({{ $user->id }}, '{{ addslashes($user->name) }}', '{{ addslashes($user->email) }}')" class="btn btn-sm btn-light text-primary border" title="Edit User">
+                            <button onclick="editUser('{{ encrypt($user->id) }}', '{{ addslashes($user->name) }}', '{{ addslashes($user->email) }}')" class="btn btn-sm btn-light text-primary border" title="Edit User">
                                 <i class="fas fa-pen"></i>
                             </button>
-                            <button onclick="deleteUser({{ $user->id }})" class="btn btn-sm btn-light text-danger border" title="Delete User">
+                            <button onclick="deleteUser('{{ encrypt($user->id) }}')" class="btn btn-sm btn-light text-danger border" title="Delete User">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>

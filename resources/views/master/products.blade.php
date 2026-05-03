@@ -3,26 +3,38 @@
 @section('title', 'Product Master')
 
 @section('content')
-<div class="content-header">
-    <div class="w-100">
+<style>
+    @media (max-width: 768px) {
+        .content-header { flex-direction: column; align-items: flex-start !important; gap: 15px; }
+        .content-header .col-md-6 { width: 100%; text-align: left !important; }
+        .content-header .d-flex { width: 100%; justify-content: flex-start !important; }
+        .content-header .btn { flex: 1; font-size: 11px; padding: 6px 10px !important; }
+        .page-title { font-size: 18px !important; }
+        .page-subtitle { font-size: 11px !important; margin-left: 0 !important; padding-left: 0 !important; }
+        .card-header { flex-direction: column; align-items: flex-start !important; gap: 12px; }
+        .card-header .input-group { max-width: 100% !important; }
+    }
+</style>
+<div class="row align-items-center mb-0 page-title-row">
+    <div class="col-12 col-md-6">
         <span class="breadcrumb-item">Master Data / Catalog</span>
         <div class="d-flex align-items-center">
             <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2" title="Back to Dashboard">
                 <i class="fas fa-arrow-left"></i>
             </a>
-            <h1 class="page-title">Product Master</h1>
+            <h1 class="page-title" style="font-size: 22px;">Product Master</h1>
         </div>
-        <p class="page-subtitle ms-md-4 ps-md-2">Manage your product catalog and specifications.</p>
+        <p class="page-subtitle ms-md-4 ps-md-2 mb-0">Manage your product catalog and specifications.</p>
     </div>
-    <div class="col-12 col-md-6 text-md-end">
+    <div class="col-12 col-md-6 text-md-end mt-2 mt-md-0">
         <div class="d-flex flex-wrap justify-content-md-end gap-2">
-            <button onclick="$('#import-product-modal').modal('show')" class="btn btn-outline-primary px-3 fw-bold">
+            <button onclick="$('#import-product-modal').modal('show')" class="btn btn-outline-primary px-3 py-2 fw-bold">
                 <i class="fas fa-file-import me-2"></i>Import CSV
             </button>
-            <a href="{{ route('master.products.export') }}" class="btn btn-success px-3 fw-bold">
+            <a href="{{ route('master.products.export') }}" class="btn btn-success px-3 py-2 fw-bold">
                 <i class="fas fa-file-csv me-2"></i>Export CSV
             </a>
-            <button onclick="$('#add-product-form')[0].reset(); $('#specs-container').empty(); $('.add-select2').val(null).trigger('change'); $('#add-product-modal').modal('show')" class="btn btn-primary px-3 fw-bold">
+            <button onclick="$('#add-product-form')[0].reset(); $('#specs-container').empty(); $('.add-select2').val(null).trigger('change'); $('#add-product-modal').modal('show')" class="btn btn-primary px-3 py-2 fw-bold">
                 <i class="fas fa-plus me-2"></i>Add Product
             </button>
         </div>
@@ -74,13 +86,13 @@
                     </td>
                     <td class="pe-4 py-3 text-end">
                         <div class="d-flex justify-content-end gap-1">
-                            <a href="{{ route('master.products.stock', $product->id) }}" class="btn btn-sm btn-success-light" title="Manage Stock">
+                            <a href="{{ route('master.products.stock', encrypt($product->id)) }}" class="btn btn-sm btn-success-light" title="Manage Stock">
                                 <i class="fas fa-boxes"></i>
                             </a>
-                            <button onclick='editProduct(@json($product))' class="btn btn-sm btn-primary-light" title="Edit">
+                            <button onclick='editProduct(@json($product), "{{ encrypt($product->id) }}")' class="btn btn-sm btn-primary-light" title="Edit">
                                 <i class="fas fa-pen"></i>
                             </button>
-                            <button onclick="deleteProduct({{ $product->id }})" class="btn btn-sm btn-danger-light" title="Delete">
+                            <button onclick="deleteProduct('{{ encrypt($product->id) }}')" class="btn btn-sm btn-danger-light" title="Delete">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -449,8 +461,8 @@ $(document).ready(function() {
     });
 });
 
-function editProduct(product) {
-    $('#edit_product_id').val(product.id);
+function editProduct(product, encryptedId) {
+    $('#edit_product_id').val(encryptedId);
     $('#edit_product_code').val(product.code);
     $('#edit_product_name').val(product.name);
     $('#edit_product_wattage').val(product.wattage);

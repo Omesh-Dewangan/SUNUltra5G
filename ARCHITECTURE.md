@@ -51,6 +51,7 @@ app/
 3.  **Sanitization**: Validate and sanitize all user inputs.
 4.  **Data Exposure**: Never expose sensitive data (passwords, tokens, keys) in responses.
 5.  **RBAC (Role-Based Access Control)**: All access must be strictly controlled via Roles and Permissions. No hardcoded role checks in logic; use permissions.
+6.  **ID Encryption (IDOR Prevention)**: Never expose raw database IDs in URLs (edit, update, show, delete) or frontend forms. All IDs must be securely encrypted (e.g., using Laravel Crypt or Hashids) when sent to the frontend and decrypted in the backend to prevent Insecure Direct Object Reference attacks.
 
 ---
 

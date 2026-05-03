@@ -17,5 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Contracts\Encryption\DecryptException $e, \Illuminate\Http\Request $request) {
+            return abort(404, 'Invalid or expired secure link.');
+        });
     })->create();

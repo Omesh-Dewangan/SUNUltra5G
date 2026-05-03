@@ -35,8 +35,8 @@ class UpdateProfileRequest extends FormRequest
         return [
             'name'             => 'required|string|max:255',
             'email'            => 'required|string|email|max:255|unique:users,email,' . $userId,
-            'current_password' => 'nullable|string',
-            'password'         => 'nullable|string|min:8|confirmed',
+            'current_password' => 'nullable|required_with:password|string',
+            'password'         => 'nullable|required_with:current_password|string|min:8|confirmed',
         ];
     }
 
@@ -57,10 +57,12 @@ class UpdateProfileRequest extends FormRequest
     public function messages()
     {
         return [
-            'password.confirmed' => 'New password and confirm password do not match.',
-            'password.min'       => 'New password must be at least 8 characters.',
-            'name.required'      => 'Full name is required.',
-            'email.unique'       => 'This email address is already taken.',
+            'password.confirmed'     => 'New password and confirm password do not match.',
+            'password.min'           => 'New password must be at least 8 characters.',
+            'password.required_with' => 'Please enter a new password to proceed.',
+            'current_password.required_with' => 'Current password is required to change your password.',
+            'name.required'          => 'Full name is required.',
+            'email.unique'           => 'This email address is already taken.',
         ];
     }
 }

@@ -60,8 +60,9 @@ class MasterController extends Controller
         ]);
     }
 
-    public function updateCategory(Request $request, $id)
+    public function updateCategory(Request $request, string $encryptedId)
     {
+        $id = decrypt($encryptedId);
         $request->validate([
             'name' => 'required|string|max:255|unique:categories,name,' . $id,
             'description' => 'nullable|string'
@@ -85,22 +86,19 @@ class MasterController extends Controller
         ]);
     }
 
-    public function destroyCategory($id)
+    public function destroyCategory(string $encryptedId)
     {
         try {
+            $id = decrypt($encryptedId);
             $category = $this->categoryRepository->findById($id);
-            $this->categoryRepository->delete($id);
-            $this->logActivity('DELETE_CATEGORY', 'Category', $id, ['name' => $category->name]);
+            if (!$category) return response()->json(['status' => false, 'message' => 'Category not found.'], 404);
+
+            $this->logActivity('DELETE_CATEGORY', 'Category', $id, $category->toArray());
             
-            return response()->json([
-                'status' => true,
-                'message' => 'Category deleted successfully!'
-            ]);
+            $this->categoryRepository->delete($id);
+            return response()->json(['status' => true, 'message' => 'Category deleted successfully! Backup saved in logs.']);
         } catch (QueryException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Cannot delete this category because it is being used by existing products.'
-            ], 400);
+            return response()->json(['status' => false, 'message' => 'Cannot delete this category because it is being used by existing products.'], 400);
         }
     }
 
@@ -130,8 +128,9 @@ class MasterController extends Controller
         ]);
     }
 
-    public function updateUnit(Request $request, $id)
+    public function updateUnit(Request $request, string $encryptedId)
     {
+        $id = decrypt($encryptedId);
         $request->validate([
             'name' => 'required|string|max:50|unique:units,name,' . $id,
             'short_name' => 'required|string|max:10|unique:units,short_name,' . $id
@@ -154,16 +153,16 @@ class MasterController extends Controller
         ]);
     }
 
-    public function destroyUnit($id)
+    public function destroyUnit(string $encryptedId)
     {
+        $id = decrypt($encryptedId);
         $unit = $this->unitRepository->findById($id);
-        $this->unitRepository->delete($id);
-        $this->logActivity('DELETE_UNIT', 'Unit', $id, ['name' => $unit->name]);
+        if (!$unit) return response()->json(['status' => false, 'message' => 'Unit not found.'], 404);
+
+        $this->logActivity('DELETE_UNIT', 'Unit', $id, $unit->toArray());
         
-        return response()->json([
-            'status' => true,
-            'message' => 'Unit deleted successfully!'
-        ]);
+        $this->unitRepository->delete($id);
+        return response()->json(['status' => true, 'message' => 'Unit deleted successfully! Backup saved in logs.']);
     }
 
     public function productsIndex()
@@ -220,8 +219,9 @@ class MasterController extends Controller
         ]);
     }
 
-    public function updateProduct(Request $request, $id)
+    public function updateProduct(Request $request, string $encryptedId)
     {
+        $id = decrypt($encryptedId);
         $request->validate([
             'code' => 'required|string|max:255|unique:inventories,code,' . $id,
             'name' => 'required|string|max:255',
@@ -265,28 +265,28 @@ class MasterController extends Controller
         ]);
     }
 
-    public function destroyProduct($id)
+    public function destroyProduct(string $encryptedId)
     {
-        // Safe check for inventory levels before deletion
+        $id = decrypt($encryptedId);
         $product = $this->inventoryRepository->findById($id);
-        if ($product && $product->stock_quantity > 0) {
+        if (!$product) return response()->json(['status' => false, 'message' => 'Product not found.'], 404);
+
+        if ($product->stock_quantity > 0) {
             return response()->json([
                 'status' => false,
                 'message' => 'Cannot delete product with existing stock. Adjust stock to 0 first.'
             ], 400);
         }
 
-        $this->inventoryRepository->delete($id);
-        $this->logActivity('DELETE_PRODUCT', 'Inventory', $id, ['code' => $product->code]);
+        $this->logActivity('DELETE_PRODUCT', 'Inventory', $id, $product->toArray());
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Product deleted successfully!'
-        ]);
+        $this->inventoryRepository->delete($id);
+        return response()->json(['status' => true, 'message' => 'Product deleted successfully! Backup saved in logs.']);
     }
 
-    public function productStockIndex($id)
+    public function productStockIndex(string $encryptedId)
     {
+        $id = decrypt($encryptedId);
         $product = $this->inventoryRepository->findById($id);
         if (!$product) {
             return redirect()->route('master.products')->with('error', 'Product not found.');
@@ -296,8 +296,9 @@ class MasterController extends Controller
         return view('master.product_stock', compact('product', 'transactions'));
     }
 
-    public function storeStockTransaction(Request $request, $id)
+    public function storeStockTransaction(Request $request, string $encryptedId)
     {
+        $id = decrypt($encryptedId);
         $request->validate([
             'type' => 'required|in:in,out',
             'quantity' => 'required|integer|min:1',
@@ -338,6 +339,54 @@ class MasterController extends Controller
             DB::rollBack();
             return response()->json(['status' => false, 'message' => 'Error updating stock: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function exportStockTransactionsCSV(Request $request, string $encryptedId)
+    {
+        $id      = decrypt($encryptedId);
+        $product = $this->inventoryRepository->findById($id);
+
+        if (!$product) {
+            abort(404, 'Product not found.');
+        }
+
+        // Get all transactions as Collection, then apply optional filters
+        $transactions = $this->stockTransactionRepository->getByInventoryId($id);
+
+        if ($request->filled('type') && in_array($request->type, ['in', 'out'])) {
+            $transactions = $transactions->where('type', $request->type);
+        }
+
+        if ($request->filled('date')) {
+            $transactions = $transactions->filter(function ($t) use ($request) {
+                return $t->created_at->format('Y-m-d') === $request->date;
+            });
+        }
+
+        $fileName = 'Stock_' . preg_replace('/[^a-z0-9_]/i', '_', $product->name) . '_' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($transactions, $product) {
+            $file = fopen('php://output', 'w');
+            fputs($file, "\xEF\xBB\xBF"); // UTF-8 BOM for Excel
+
+            fputcsv($file, ['Date', 'Time', 'Type', 'Quantity', 'Unit', 'Price Per Unit (INR)', 'Remarks']);
+
+            foreach ($transactions as $t) {
+                fputcsv($file, [
+                    $t->created_at->format('d M Y'),
+                    $t->created_at->format('h:i A'),
+                    $t->type === 'in' ? 'INBOUND' : 'OUTBOUND',
+                    ($t->type === 'in' ? '+' : '-') . $t->quantity,
+                    $product->unit,
+                    $t->price_per_unit ? number_format($t->price_per_unit, 2, '.', '') : '-',
+                    $t->remarks ?? 'No remarks provided',
+                ]);
+            }
+
+            fclose($file);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
     public function exportProductsCSV()
     {

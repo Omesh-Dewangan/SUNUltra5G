@@ -37,16 +37,16 @@
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" role="switch" 
                                {{ $dealer->is_active ? 'checked' : '' }}
-                               onchange="toggleDealerStatus({{ $dealer->id }})">
+                               onchange="toggleDealerStatus('{{ encrypt($dealer->id) }}')">
                         <label class="form-check-label">{{ $dealer->is_active ? 'Active' : 'Inactive' }}</label>
                     </div>
                 </td>
                 <td>
                     <div class="action-btn-group">
-                        <button class="btn-icon btn-outline-primary" title="Edit" onclick="editDealer({{ json_encode($dealer) }})">
+                        <button class="btn-icon btn-outline-primary" title="Edit" onclick='editDealer(@json($dealer), "{{ encrypt($dealer->id) }}")'>
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn-icon btn-outline-danger" title="Delete" onclick="deleteDealer({{ $dealer->id }})">
+                        <button class="btn-icon btn-outline-danger" title="Delete" onclick="deleteDealer('{{ encrypt($dealer->id) }}')">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>

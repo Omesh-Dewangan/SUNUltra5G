@@ -33,10 +33,10 @@
                         <div class="extra-small opacity-75">{{ $role->slug }}</div>
                     </button>
                     <div class="action-btns d-flex flex-column gap-1">
-                        <button onclick="editRole({{ $role->id }}, '{{ addslashes($role->name) }}', '{{ addslashes($role->slug) }}', '{{ addslashes($role->description) }}')" class="btn btn-sm btn-light p-1 border-0" title="Edit Role">
+                        <button onclick="editRole('{{ encrypt($role->id) }}', '{{ addslashes($role->name) }}', '{{ addslashes($role->slug) }}', '{{ addslashes($role->description) }}')" class="btn btn-sm btn-light p-1 border-0" title="Edit Role">
                             <i class="fas fa-pen text-primary" style="font-size: 10px;"></i>
                         </button>
-                        <button onclick="deleteRole({{ $role->id }}, '{{ $role->slug }}')" class="btn btn-sm btn-light p-1 border-0" title="Delete Role">
+                        <button onclick="deleteRole('{{ encrypt($role->id) }}', '{{ $role->slug }}')" class="btn btn-sm btn-light p-1 border-0" title="Delete Role">
                             <i class="fas fa-trash text-danger" style="font-size: 10px;"></i>
                         </button>
                     </div>

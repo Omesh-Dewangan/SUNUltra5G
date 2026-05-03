@@ -3,6 +3,14 @@
 @section('title', 'Administrative Dashboard')
 
 @section('content')
+<style>
+    @media (max-width: 768px) {
+        .stat-card { padding: 15px !important; }
+        .stat-value { font-size: 20px !important; }
+        .stat-label { font-size: 11px !important; }
+        .content-header h1 { font-size: 20px !important; }
+    }
+</style>
 <div class="container-fluid p-0">
     <!-- Page Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
@@ -322,7 +330,7 @@
                             @endphp
                             <tr>
                                 <td class="ps-3 py-3">
-                                    <a href="{{ route('sales.show', $order->id) }}" class="fw-bold small text-primary text-decoration-none">
+                                    <a href="{{ route('sales.show', encrypt($order->id)) }}" class="fw-bold small text-primary text-decoration-none">
                                         #{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}
                                     </a>
                                 </td>

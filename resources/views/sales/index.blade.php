@@ -3,9 +3,21 @@
 @section('title', 'Sales Orders')
 
 @section('content')
+<style>
+    @media (max-width: 768px) {
+        .content-header { flex-direction: column; align-items: flex-start !important; gap: 15px; }
+        .content-header .col-md-6 { width: 100%; text-align: left !important; justify-content: flex-start !important; }
+        .content-header .btn { flex: 1; font-size: 11px; padding: 8px 10px !important; }
+        .page-title { font-size: 18px !important; }
+        .page-subtitle { font-size: 11px !important; margin-left: 0 !important; padding-left: 0 !important; }
+        .status-tabs { overflow-x: auto; white-space: nowrap; padding-bottom: 10px; }
+        .card-header { flex-direction: column; align-items: flex-start !important; gap: 12px; }
+        .card-header .input-group { max-width: 100% !important; }
+    }
+</style>
 <!-- Header Section -->
-<div class="content-header">
-    <div class="w-100">
+<div class="content-header d-flex justify-content-between align-items-center flex-wrap mb-4">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
         <span class="breadcrumb-item">Sales / Order Management</span>
         <div class="d-flex align-items-center">
             <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2" title="Back to Dashboard">
@@ -13,14 +25,14 @@
             </a>
             <h1 class="page-title">Sales Orders</h1>
         </div>
-        <p class="page-subtitle ms-md-4 ps-md-2">Track, manage and process customer sales orders.</p>
+        <p class="page-subtitle ms-md-4 ps-md-2 mb-0">Track, manage and process customer sales orders.</p>
     </div>
     <div class="col-12 col-md-6 text-md-end d-flex justify-content-md-end gap-2">
-        <a href="{{ route('sales.export', request()->query()) }}" class="btn btn-outline-secondary px-4 py-2 rounded-3 shadow-sm bg-white">
-            <i class="fas fa-file-csv me-2"></i>Export Report
+        <a href="{{ route('sales.export', request()->query()) }}" class="btn btn-dark px-3 py-2 rounded-3 shadow-sm">
+            <i class="fas fa-file-csv me-1"></i>Export
         </a>
-        <a href="{{ route('sales.create') }}" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm">
-            <i class="fas fa-plus me-2"></i>New Order
+        <a href="{{ route('sales.create') }}" class="btn btn-primary px-3 py-2 rounded-3 shadow-sm">
+            <i class="fas fa-plus me-1"></i>New Order
         </a>
     </div>
 </div>
@@ -29,7 +41,7 @@
 <div class="d-flex flex-wrap gap-2 mb-4">
     @foreach(['All' => '', 'Draft' => 'draft', 'Confirmed' => 'confirmed', 'Dispatched' => 'dispatched', 'Completed' => 'completed', 'Cancelled' => 'cancelled'] as $label => $val)
         <a href="{{ route('sales.index', $val ? ['status' => $val] : []) }}"
-           class="btn rounded-pill px-3 py-1 small fw-bold {{ ($status ?? '') === $val ? 'btn-primary' : 'btn-outline-secondary border-light-subtle bg-white text-muted' }}"
+           class="btn rounded-pill px-3 py-1 small fw-bold {{ ($status ?? '') === $val ? 'btn-primary' : 'btn-outline-secondary border-light-subtle text-muted shadow-sm bg-white' }}"
            style="font-size: 13px;">
             {{ $label }}
         </a>

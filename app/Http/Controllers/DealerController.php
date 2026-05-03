@@ -64,8 +64,9 @@ class DealerController extends Controller
     /**
      * Update the specified dealer in storage.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $encryptedId)
     {
+        $id = decrypt($encryptedId);
         $request->validate([
             'name'           => 'required|string|max:255',
             'phone'          => 'required|string|unique:dealers,phone,' . $id,
@@ -91,9 +92,10 @@ class DealerController extends Controller
     /**
      * Toggle dealer active status.
      */
-    public function toggleStatus($id)
+    public function toggleStatus(string $encryptedId)
     {
         try {
+            $id = decrypt($encryptedId);
             $this->dealerService->toggleStatus($id);
             return response()->json(['success' => true, 'message' => 'Status updated!']);
         } catch (Exception $e) {
@@ -104,9 +106,10 @@ class DealerController extends Controller
     /**
      * Remove the specified dealer from storage.
      */
-    public function destroy($id)
+    public function destroy(string $encryptedId)
     {
         try {
+            $id = decrypt($encryptedId);
             $this->dealerService->deleteDealer($id);
             return response()->json(['success' => true, 'message' => 'Dealer deleted successfully!']);
         } catch (Exception $e) {

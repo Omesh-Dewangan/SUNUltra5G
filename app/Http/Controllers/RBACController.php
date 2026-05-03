@@ -86,8 +86,9 @@ class RBACController extends Controller
     /**
      * Update User (AJAX)
      */
-    public function updateUser(Request $request, $id): JsonResponse
+    public function updateUser(Request $request, string $encryptedId): JsonResponse
     {
+        $id = decrypt($encryptedId);
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$id,
@@ -121,9 +122,10 @@ class RBACController extends Controller
     /**
      * Delete User (AJAX)
      */
-    public function destroyUser($id): JsonResponse
+    public function destroyUser(string $encryptedId): JsonResponse
     {
         try {
+            $id = decrypt($encryptedId);
             $user = \App\Models\User::findOrFail($id);
             
             if ($user->id === auth()->id()) {
@@ -229,8 +231,9 @@ class RBACController extends Controller
     /**
      * Update Role (AJAX)
      */
-    public function updateRole(Request $request, $id): JsonResponse
+    public function updateRole(Request $request, string $encryptedId): JsonResponse
     {
+        $id = decrypt($encryptedId);
         $request->validate([
             'name' => 'required|string|unique:roles,name,'.$id,
             'slug' => 'required|string|unique:roles,slug,'.$id,
@@ -250,20 +253,124 @@ class RBACController extends Controller
     /**
      * Delete Role (AJAX)
      */
-    public function destroyRole($id): JsonResponse
+    public function destroyRole(string $encryptedId): JsonResponse
     {
         try {
+            $id = decrypt($encryptedId);
             // Prevent deleting critical roles
             $role = $this->roleRepository->findById($id);
-            if ($role && in_array($role->slug, ['super_admin', 'admin'])) {
+            if (!$role) {
+                return response()->json(['status' => false, 'message' => 'Role not found.'], 404);
+            }
+
+            if (in_array($role->slug, ['super_admin', 'admin'])) {
                 return response()->json(['status' => false, 'message' => 'Cannot delete critical system roles.'], 403);
             }
 
-            $this->logActivity('DELETE_ROLE', 'Role', $id, ['name' => $role->name ?? 'Unknown']);
+            // Capture full role data for reversion/reference in logs
+            $logData = [
+                'name'        => $role->name,
+                'slug'        => $role->slug,
+                'description' => $role->description,
+                'permissions' => $role->permissions->pluck('name')->toArray(),
+                'permission_ids' => $role->permissions->pluck('id')->toArray(),
+                'deleted_at'  => now()->toDateTimeString()
+            ];
+
+            $this->logActivity('DELETE_ROLE', 'Role', $id, $logData);
+            
             $this->roleRepository->delete($id);
-            return response()->json(['status' => true, 'message' => 'Role deleted successfully!']);
+            return response()->json(['status' => true, 'message' => 'Role deleted successfully! Details backed up in activity logs.']);
         } catch (Exception $e) {
-            return response()->json(['status' => false, 'message' => 'Failed to delete role.'], 500);
+            return response()->json(['status' => false, 'message' => 'Failed to delete role: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * View Activity Logs (AJAX/Page)
+     */
+    public function systemLogs()
+    {
+        $logs = \App\Models\ActivityLog::with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('rbac.logs', compact('logs'));
+    }
+
+    /**
+     * Restore a deleted Resource (Role, Category, Unit, Product) from Log (AJAX)
+     */
+    public function restoreResource(string $encryptedLogId): JsonResponse
+    {
+        try {
+            $logId = decrypt($encryptedLogId);
+            $log = \App\Models\ActivityLog::findOrFail($logId);
+            $action = $log->action;
+            $data = $log->details;
+
+            if (!str_starts_with($action, 'DELETE_')) {
+                return response()->json(['status' => false, 'message' => 'This action cannot be restored.'], 400);
+            }
+
+            $message = "";
+            switch ($action) {
+                case 'DELETE_ROLE':
+                    if (\App\Models\Role::where('slug', $data['slug'])->exists()) {
+                        return response()->json(['status' => false, 'message' => 'A role with this slug already exists.'], 400);
+                    }
+                    $resource = \App\Models\Role::create([
+                        'name' => $data['name'],
+                        'slug' => $data['slug'],
+                        'description' => $data['description'] ?? ''
+                    ]);
+                    if (!empty($data['permission_ids'])) {
+                        $resource->permissions()->sync($data['permission_ids']);
+                    }
+                    $message = "Role '{$resource->name}' restored!";
+                    break;
+
+                case 'DELETE_CATEGORY':
+                    // Check if slug still exists to prevent duplicates
+                    if (isset($data['slug']) && \App\Models\Category::where('slug', $data['slug'])->exists()) {
+                        return response()->json(['status' => false, 'message' => 'A category with this slug already exists.'], 400);
+                    }
+                    $resource = \App\Models\Category::create([
+                        'name'        => $data['name'],
+                        'slug'        => $data['slug'] ?? \Illuminate\Support\Str::slug($data['name']),
+                        'description' => $data['description'] ?? null
+                    ]);
+                    $message = "Category '{$resource->name}' restored!";
+                    break;
+
+                case 'DELETE_UNIT':
+                    $resource = \App\Models\Unit::create([
+                        'name'       => $data['name'],
+                        'short_name' => $data['short_name'] ?? null
+                    ]);
+                    $message = "Unit '{$resource->name}' restored!";
+                    break;
+
+                case 'DELETE_PRODUCT':
+                    if (\App\Models\Inventory::where('code', $data['code'])->exists()) {
+                        return response()->json(['status' => false, 'message' => 'A product with this code already exists.'], 400);
+                    }
+                    $resource = \App\Models\Inventory::create($data);
+                    $message = "Product '{$resource->name}' restored!";
+                    break;
+
+                default:
+                    return response()->json(['status' => false, 'message' => 'Restoration logic not implemented for this resource.'], 400);
+            }
+
+            $this->logActivity('RESTORE_RESOURCE', $log->model, $resource->id, ['original_log_id' => $logId, 'action' => $action]);
+
+            return response()->json([
+                'status' => true,
+                'message' => $message . " Details recovered from logs."
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => 'Restoration failed: ' . $e->getMessage()], 500);
         }
     }
 }

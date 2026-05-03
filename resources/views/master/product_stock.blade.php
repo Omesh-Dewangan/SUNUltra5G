@@ -3,6 +3,89 @@
 @section('title', 'Manage Stock - ' . $product->name)
 
 @section('content')
+<!-- Bootstrap Datepicker CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css">
+<style>
+    /* Datepicker wrapper - scopes the calendar so it positions correctly */
+    #date-picker-wrapper {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        flex-grow: 1;
+    }
+    /* Full width on mobile */
+    @media (max-width: 576px) {
+        #date-picker-wrapper {
+            width: 100%;
+        }
+        #date-filter {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+    }
+    /* Inline clear button inside date input */
+    .date-input-wrapper {
+        position: relative;
+        flex: 1;
+    }
+    .date-input-wrapper #date-filter {
+        padding-right: 26px;
+    }
+    #date-clear-inline {
+        position: absolute;
+        right: 7px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #94a3b8;
+        font-size: 11px;
+        display: none;
+        z-index: 10;
+        line-height: 1;
+    }
+    #date-clear-inline:hover {
+        color: #ef4444;
+    }
+    /* Override ONLY the global dashboard fixed positioning - let datepicker JS handle top/left */
+    .datepicker.dropdown-menu {
+        position: absolute !important;
+        z-index: 9999 !important;
+    }
+    
+    /* Dark Theme Support for Bootstrap Datepicker */
+    [data-theme="dark"] .datepicker.dropdown-menu {
+        background-color: #1e293b !important;
+        border: 1px solid #334155 !important;
+    }
+    [data-theme="dark"] .datepicker table tr td, 
+    [data-theme="dark"] .datepicker table tr th {
+        color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] .datepicker table tr td.day:hover,
+    [data-theme="dark"] .datepicker table tr td.focused {
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+    [data-theme="dark"] .datepicker table tr td.old, 
+    [data-theme="dark"] .datepicker table tr td.new {
+        color: #64748b !important;
+    }
+    [data-theme="dark"] .datepicker table tr td.today {
+        background-color: rgba(245, 158, 11, 0.2) !important;
+        color: #fbbf24 !important;
+    }
+    [data-theme="dark"] .datepicker table tr td.active, 
+    [data-theme="dark"] .datepicker table tr td.active:hover {
+        background-color: #3b82f6 !important;
+        color: white !important;
+        text-shadow: none !important;
+    }
+    [data-theme="dark"] .datepicker .datepicker-switch:hover, 
+    [data-theme="dark"] .datepicker .prev:hover, 
+    [data-theme="dark"] .datepicker .next:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+</style>
 <div class="container-fluid p-0">
     <!-- Header Card -->
     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
@@ -93,16 +176,31 @@
         <div class="card-header bg-white py-4 px-4 border-0">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <h3 class="h5 fw-bold text-dark mb-0">Transaction Audit Trail</h3>
-                <div class="btn-group shadow-sm rounded-3 overflow-hidden">
-                    <button type="button" class="btn btn-light btn-sm filter-btn active fw-bold px-3 border" data-filter="all">
-                        <i class="fas fa-list me-1"></i> All
-                    </button>
-                    <button type="button" class="btn btn-light btn-sm filter-btn px-3 border text-success" data-filter="in">
-                        <i class="fas fa-arrow-down me-1"></i> In
-                    </button>
-                    <button type="button" class="btn btn-light btn-sm filter-btn px-3 border text-danger" data-filter="out">
-                        <i class="fas fa-arrow-up me-1"></i> Out
-                    </button>
+                <div class="d-flex align-items-center flex-wrap gap-2 w-100 w-sm-auto justify-content-sm-end">
+                    <div id="date-picker-wrapper" class="flex-grow-1 flex-sm-grow-0">
+                        <div class="date-input-wrapper">
+                            <input type="text" id="date-filter" class="form-control form-control-sm border text-muted shadow-sm w-100" style="min-width: 120px; max-width: 200px;" placeholder="Select Date" title="Filter by date">
+                            <span id="date-clear-inline" title="Clear date"><i class="fas fa-times"></i></span>
+                        </div>
+                    </div>
+                    <div class="btn-group shadow-sm rounded-3 overflow-hidden flex-grow-1 flex-sm-grow-0">
+                        <button type="button" class="btn btn-light btn-sm filter-btn active fw-bold px-3 border" data-filter="all">
+                            <i class="fas fa-list me-1"></i> All
+                        </button>
+                        <button type="button" class="btn btn-light btn-sm filter-btn px-3 border text-success" data-filter="in">
+                            <i class="fas fa-arrow-down me-1"></i> In
+                        </button>
+                        <button type="button" class="btn btn-light btn-sm filter-btn px-3 border text-danger" data-filter="out">
+                            <i class="fas fa-arrow-up me-1"></i> Out
+                        </button>
+                    </div>
+                    <a id="export-csv-btn"
+                       href="{{ route('master.products.stock.export', encrypt($product->id)) }}"
+                       class="btn btn-sm px-3 fw-bold border shadow-sm"
+                       style="background:rgba(34,197,94,0.1);color:#16a34a;border-color:rgba(34,197,94,0.3) !important;"
+                       title="Export to CSV">
+                        <i class="fas fa-file-csv me-1"></i> <span class="d-none d-sm-inline">Export</span> CSV
+                    </a>
                 </div>
             </div>
         </div>
@@ -120,7 +218,13 @@
                     </thead>
                     <tbody>
                         @forelse($transactions as $transaction)
-                        <tr class="transaction-row" data-type="{{ $transaction->type }}">
+                        <tr class="transaction-row"
+                            data-type="{{ $transaction->type }}"
+                            data-date="{{ $transaction->created_at->format('Y-m-d') }}"
+                            data-datetime="{{ $transaction->created_at->format('d M Y h:i A') }}"
+                            data-qty="{{ ($transaction->type == 'in' ? '+' : '-') . number_format($transaction->quantity) }} {{ $product->unit }}"
+                            data-price="{{ $transaction->price_per_unit ? number_format($transaction->price_per_unit, 2) : '-' }}"
+                            data-remarks="{{ addslashes($transaction->remarks ?? 'No remarks provided') }}">
                             <td class="ps-4">
                                 <div class="fw-bold text-dark small">{{ $transaction->created_at->format('d M Y') }}</div>
                                 <div class="extra-small text-muted">{{ $transaction->created_at->format('h:i A') }}</div>
@@ -284,8 +388,21 @@
 @endsection
 
 @section('scripts')
+<!-- Bootstrap Datepicker JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+
 <script>
 $(document).ready(function() {
+    // Initialize jQuery Bootstrap Datepicker
+    $('#date-filter').datepicker({
+        format: 'yyyy-mm-dd',
+        autoclose: true,
+        todayHighlight: true,
+        orientation: 'bottom left'
+    }).on('changeDate', function(e) {
+        $('#date-clear-inline').show();
+        applyFilters();
+    });
     function handleTransactionSubmit(formId, btnId, modalId) {
         $(`#${formId}`).on('submit', function(e) {
             e.preventDefault();
@@ -294,7 +411,7 @@ $(document).ready(function() {
             btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Processing...');
 
             $.ajax({
-                url: "{{ route('master.products.stock.store', $product->id) }}",
+                url: "{{ route('master.products.stock.store', encrypt($product->id)) }}",
                 method: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {
@@ -325,21 +442,88 @@ $(document).ready(function() {
     handleTransactionSubmit('stock-in-form', 'submit-in-btn', 'stockInModal');
     handleTransactionSubmit('stock-out-form', 'submit-out-btn', 'stockOutModal');
 
-    // Simple Button Filter Logic
+    // Apply Filters Logic
+    function applyFilters() {
+        var typeFilter = $('.filter-btn.active').attr('data-filter');
+        var dateFilter = $('#date-filter').val();
+
+        if (dateFilter) {
+            $('#date-clear-inline').show();
+        } else {
+            $('#date-clear-inline').hide();
+        }
+
+        var visibleCount = 0;
+        $('.transaction-row').each(function() {
+            var row = $(this);
+            var matchType = (typeFilter === 'all' || row.attr('data-type') === typeFilter);
+            var matchDate = (!dateFilter || row.attr('data-date') === dateFilter);
+
+            if (matchType && matchDate) {
+                row.show();
+                visibleCount++;
+            } else {
+                row.hide();
+            }
+        });
+
+        // Hide or show empty state based on visible count
+        if (visibleCount === 0) {
+            if ($('#empty-filter-msg').length === 0) {
+                $('tbody').append('<tr id="empty-filter-msg"><td colspan="5" class="text-center py-5"><div class="opacity-25 mb-3"><i class="fas fa-search display-4"></i></div><p class="text-muted small">No transactions found matching your filters.</p></td></tr>');
+            }
+            $('#empty-filter-msg').show();
+        } else {
+            $('#empty-filter-msg').hide();
+        }
+    }
+
     $(document).on('click', '.filter-btn', function() {
-        var filter = $(this).attr('data-filter');
-        
         // Update active class
         $('.filter-btn').removeClass('active fw-bold bg-primary text-white').addClass('btn-light');
         $(this).addClass('active fw-bold bg-primary text-white').removeClass('btn-light');
+        applyFilters();
+    });
 
-        // Apply filter
-        if (filter === 'all') {
-            $('.transaction-row').show();
-        } else {
-            $('.transaction-row').hide();
-            $(`.transaction-row[data-type="${filter}"]`).show();
+    // Handle manual input clear
+    $('#date-filter').on('change input', applyFilters);
+    
+    // Inline clear button inside date input
+    $('#date-clear-inline').on('click', function() {
+        $('#date-filter').datepicker('clearDates');
+        $('#date-clear-inline').hide();
+        applyFilters();
+    });
+
+    // Laravel CSV Export - pass active filters as query params
+    $('#export-csv-btn').on('click', function(e) {
+        e.preventDefault();
+        
+        var dateFilter = $('#date-filter').val();
+        
+        // Validation: Ensure date is selected
+        if (!dateFilter) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Date Required',
+                text: 'Please select a date before exporting the CSV report.',
+                confirmButtonColor: '#16a34a'
+            });
+            return;
         }
+
+        var baseUrl = "{{ route('master.products.stock.export', encrypt($product->id)) }}";
+        var params  = new URLSearchParams();
+
+        var typeFilter = $('.filter-btn.active').attr('data-filter');
+        if (typeFilter && typeFilter !== 'all') {
+            params.append('type', typeFilter);
+        }
+
+        params.append('date', dateFilter);
+
+        var exportUrl = baseUrl + '?' + params.toString();
+        window.location.href = exportUrl;
     });
 });
 </script>

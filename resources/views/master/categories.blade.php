@@ -3,24 +3,37 @@
 @section('title', 'Category Master')
 
 @section('content')
-<div class="content-header">
-    <div class="w-100">
+<style>
+    @media (max-width: 768px) {
+        .content-header { flex-direction: column; align-items: flex-start !important; gap: 15px; }
+        .content-header .col-md-6 { width: 100%; text-align: left !important; margin-top: 10px; }
+        .content-header .btn { width: 100%; margin-bottom: 10px; margin-right: 0 !important; }
+        .page-title { font-size: 18px !important; }
+        .page-subtitle { font-size: 11px !important; margin-left: 0 !important; padding-left: 0 !important; }
+        .card-header { flex-direction: column; align-items: flex-start !important; gap: 12px; }
+        .card-header .input-group { max-width: 100% !important; }
+    }
+</style>
+<div class="row align-items-center mb-0 page-title-row">
+    <div class="col-12 col-md-6">
         <span class="breadcrumb-item">Master Data / Inventory</span>
         <div class="d-flex align-items-center">
             <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2" title="Back to Dashboard">
                 <i class="fas fa-arrow-left"></i>
             </a>
-            <h1 class="page-title">Category Master</h1>
+            <h1 class="page-title" style="font-size: 22px;">Category Master</h1>
         </div>
-        <p class="page-subtitle ms-md-4 ps-md-2">Group your products logically into categories.</p>
+        <p class="page-subtitle ms-md-4 ps-md-2 mb-0">Group your products logically into categories.</p>
     </div>
-    <div class="col-12 col-md-6 text-md-end">
-        <button onclick="$('#import-category-modal').modal('show')" class="btn btn-outline-primary px-4 fw-bold me-2">
-            <i class="fas fa-file-import me-2"></i>Import CSV
-        </button>
-        <button onclick="$('#add-category-form')[0].reset(); $('#add-category-modal').modal('show')" class="btn btn-primary px-4 fw-bold">
-            <i class="fas fa-plus me-2"></i>Add Category
-        </button>
+    <div class="col-12 col-md-6 text-md-end mt-2 mt-md-0">
+        <div class="d-flex flex-wrap justify-content-md-end gap-2">
+            <button onclick="$('#import-category-modal').modal('show')" class="btn btn-outline-primary px-3 py-2 fw-bold">
+                <i class="fas fa-file-import me-2"></i>Import CSV
+            </button>
+            <button onclick="$('#add-category-form')[0].reset(); $('#add-category-modal').modal('show')" class="btn btn-primary px-3 py-2 fw-bold">
+                <i class="fas fa-plus me-2"></i>Add Category
+            </button>
+        </div>
     </div>
 </div>
 
@@ -52,10 +65,10 @@
                     <td class="py-3 text-muted">{{ $category->description ?? '-' }}</td>
                     <td class="pe-4 py-3 text-end">
                         <div class="d-flex justify-content-end gap-1">
-                            <button onclick="editCategory({{ $category->id }}, '{{ addslashes($category->name) }}', '{{ addslashes($category->description) }}')" class="btn btn-sm btn-primary-light" title="Edit">
+                            <button onclick="editCategory('{{ encrypt($category->id) }}', '{{ addslashes($category->name) }}', '{{ addslashes($category->description) }}')" class="btn btn-sm btn-primary-light" title="Edit">
                                 <i class="fas fa-pen"></i>
                             </button>
-                            <button onclick="deleteCategory({{ $category->id }})" class="btn btn-sm btn-danger-light" title="Delete">
+                            <button onclick="deleteCategory('{{ encrypt($category->id) }}')" class="btn btn-sm btn-danger-light" title="Delete">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>

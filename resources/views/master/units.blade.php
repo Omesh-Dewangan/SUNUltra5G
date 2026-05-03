@@ -3,25 +3,35 @@
 @section('title', 'Unit Master')
 
 @section('content')
-<div class="row align-items-center mb-4 g-3">
+<style>
+    @media (max-width: 768px) {
+        .page-title-row { flex-direction: column; align-items: flex-start !important; gap: 15px; }
+        .page-title-row .col-md-6 { width: 100%; text-align: left !important; }
+        .page-title-row .btn { width: 100%; margin-bottom: 10px; margin-right: 0 !important; }
+        .card-header { flex-direction: column; align-items: flex-start !important; gap: 12px; }
+        .card-header .input-group { max-width: 100% !important; }
+    }
+</style>
+<div class="row align-items-center mb-0 page-title-row">
     <div class="col-12 col-md-6">
+        <span class="breadcrumb-item">Master Data / Catalog</span>
         <div class="d-flex align-items-center">
-            <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2">
+            <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2" title="Back to Dashboard">
                 <i class="fas fa-arrow-left"></i>
             </a>
-            <div>
-                <h1 class="h3 fw-bold text-dark mb-1">Unit Master</h1>
-                <p class="text-muted mb-0">Manage units of measurement for products.</p>
-            </div>
+            <h1 class="page-title" style="font-size: 22px;">Unit Master</h1>
         </div>
+        <p class="page-subtitle ms-md-4 ps-md-2 mb-0">Manage units of measurement for products.</p>
     </div>
-    <div class="col-12 col-md-6 text-md-end">
-        <button onclick="$('#import-unit-modal').modal('show')" class="btn btn-outline-primary px-4 fw-bold me-2">
-            <i class="fas fa-file-import me-2"></i>Import CSV
-        </button>
-        <button onclick="$('#add-unit-form')[0].reset(); $('#add-unit-modal').modal('show')" class="btn btn-primary px-4 fw-bold">
-            <i class="fas fa-plus me-2"></i>Add Unit
-        </button>
+    <div class="col-12 col-md-6 text-md-end mt-2 mt-md-0">
+        <div class="d-flex flex-wrap justify-content-md-end gap-2">
+            <button onclick="$('#import-unit-modal').modal('show')" class="btn btn-outline-primary px-3 py-2 fw-bold">
+                <i class="fas fa-file-import me-2"></i>Import CSV
+            </button>
+            <button onclick="$('#add-unit-form')[0].reset(); $('#add-unit-modal').modal('show')" class="btn btn-primary px-3 py-2 fw-bold">
+                <i class="fas fa-plus me-2"></i>Add Unit
+            </button>
+        </div>
     </div>
 </div>
 
@@ -55,10 +65,10 @@
                     </td>
                     <td class="pe-4 py-3 text-end">
                         <div class="d-flex justify-content-end gap-1">
-                            <button onclick="editUnit({{ $unit->id }}, '{{ addslashes($unit->name) }}', '{{ addslashes($unit->short_name) }}')" class="btn btn-sm btn-primary-light" title="Edit">
+                            <button onclick="editUnit('{{ encrypt($unit->id) }}', '{{ addslashes($unit->name) }}', '{{ addslashes($unit->short_name) }}')" class="btn btn-sm btn-primary-light" title="Edit">
                                 <i class="fas fa-pen"></i>
                             </button>
-                            <button onclick="deleteUnit({{ $unit->id }})" class="btn btn-sm btn-danger-light" title="Delete">
+                            <button onclick="deleteUnit('{{ encrypt($unit->id) }}')" class="btn btn-sm btn-danger-light" title="Delete">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>

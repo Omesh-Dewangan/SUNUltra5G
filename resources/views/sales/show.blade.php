@@ -99,10 +99,12 @@
 </div>
 
 <!-- Invoice Card -->
-<div class="data-card p-3 p-md-5" id="printable-invoice" style="position: relative; overflow: hidden; background: white; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+<div class="card border-0 shadow-sm p-3 p-md-5" id="printable-invoice" style="position: relative; overflow: hidden; border: 1px solid rgba(226, 232, 240, 0.1); border-radius: 20px;">
     
-    <!-- Watermark Background -->
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 120px; font-weight: 900; color: rgba(0,0,0,0.02); pointer-events: none; white-space: nowrap; text-transform: uppercase;">SUNUltra 5G</div>
+    <!-- Watermark Background (Optimized for Web & Print) -->
+    <div class="watermark-text" style="position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 130px; font-weight: 900; color: rgba(100, 116, 139, 0.07); pointer-events: none; white-space: nowrap; text-transform: uppercase; z-index: 0; -webkit-print-color-adjust: exact !important;">
+        SUNUltra 5G
+    </div>
 
     <!-- Header Row -->
     <div class="row align-items-start mb-4 pb-4 border-bottom border-primary border-2">
@@ -119,9 +121,9 @@
     <!-- Info Section -->
     <div class="row g-4 mb-5">
         <div class="col-12 col-md-7">
-            <div class="p-4 rounded-3 h-100" style="background: #f8fafc; border-left: 5px solid #1e3a8a;">
+            <div class="p-4 rounded-3 h-100 border border-dashed border-secondary border-opacity-25">
                 <div class="small fw-bold text-muted text-uppercase mb-3" style="letter-spacing: 1px;">Billed To</div>
-                <div class="h5 fw-bold text-dark mb-2">{{ $order->customer_name }}</div>
+                <div class="h4 fw-bold text-dark-mode-white mb-2">{{ $order->customer_name }}</div>
                 @if($order->customer_phone)
                 <div class="small text-secondary mb-2 d-flex align-items-center gap-2">
                     <i class="fas fa-phone-alt text-primary"></i> {{ $order->customer_phone }}
@@ -200,7 +202,7 @@
             </div>
         </div>
         <div class="col-12 col-md-5">
-            <div class="p-4 rounded-3 border border-secondary-subtle" style="background: #f8fafc;">
+            <div class="p-4 rounded-3 border border-secondary border-opacity-25">
                 <div class="d-flex justify-content-between pb-2 mb-2 border-bottom text-muted">
                     <span>Subtotal</span>
                     <span class="fw-bold">₹{{ number_format($order->total_amount, 2) }}</span>

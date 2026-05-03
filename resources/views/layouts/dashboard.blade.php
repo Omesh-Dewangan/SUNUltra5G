@@ -768,6 +768,9 @@
                 <a href="{{ route('rbac.roles') }}" class="nav-link {{ request()->routeIs('rbac.roles') ? 'active' : '' }}">
                     <i class="fas fa-user-lock"></i> Security Roles
                 </a>
+                <a href="{{ route('rbac.logs') }}" class="nav-link {{ request()->routeIs('rbac.logs') ? 'active' : '' }}">
+                    <i class="fas fa-history"></i> System Logs
+                </a>
             @endif
         </div>
 
@@ -925,16 +928,13 @@
             // Disable autocomplete globally
             $('form, input, select, textarea').attr('autocomplete', 'off');
 
-            // Global Live Search Functionality
+            // Global Live Search Functionality for Tables
             $('.live-search-input').on('keyup', function() {
                 var value = $(this).val().toLowerCase();
                 var tableId = $(this).data('table');
                 var $rows = $('#' + tableId + ' tbody tr');
                 
                 $rows.each(function() {
-                    // Check if this row is already hidden by another filter (like the category filter in stock audit)
-                    // Wait, if we use toggle(), it might override other filters.
-                    // Instead, we just check text and add/remove a class or hide/show.
                     var rowText = $(this).text().toLowerCase();
                     if (rowText.indexOf(value) > -1) {
                         $(this).removeClass('d-none-search');
@@ -942,6 +942,26 @@
                         $(this).addClass('d-none-search');
                     }
                 });
+            });
+
+            // Top Header Global Search (Filters Sidebar Menus)
+            $('.search-input').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                if (value === '') {
+                    $('#sidebar .nav-link').show();
+                    $('#sidebar .menu-label').show();
+                } else {
+                    $('#sidebar .nav-link').each(function() {
+                        var text = $(this).text().toLowerCase();
+                        $(this).toggle(text.indexOf(value) > -1);
+                    });
+                    
+                    $('#sidebar .menu-label').each(function() {
+                        var nextLinks = $(this).nextUntil('.menu-label', '.nav-link');
+                        var visibleLinks = nextLinks.filter(function() { return $(this).css('display') !== 'none'; }).length;
+                        $(this).toggle(visibleLinks > 0);
+                    });
+                }
             });
         });
         

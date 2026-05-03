@@ -143,10 +143,10 @@
         $('#dealer-modal').modal('show');
     }
 
-    function editDealer(dealer) {
+    function editDealer(dealer, encryptedId) {
         isEditing = true;
         $('#modal-title').text('Edit Dealer');
-        $('#dealer-id').val(dealer.id);
+        $('#dealer-id').val(encryptedId);
         $('#d-name').val(dealer.name);
         $('#d-type').val(dealer.dealer_type);
         $('#d-contact').val(dealer.contact_person);

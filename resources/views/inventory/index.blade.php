@@ -3,21 +3,29 @@
 @section('title', 'Inventory Management')
 
 @section('content')
-<div class="content-header">
-    <div class="w-100">
+<div class="row align-items-center mb-0 page-title-row">
+    <div class="col-12 col-md-8">
         <span class="breadcrumb-item">Warehouse / Stock Control</span>
         <div class="d-flex align-items-center">
             <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2" title="Back to Dashboard">
                 <i class="fas fa-arrow-left"></i>
             </a>
-            <h1 class="page-title">Inventory Management</h1>
+            <h1 class="page-title" style="font-size: 22px;">Inventory Management</h1>
         </div>
-        <p class="page-subtitle ms-md-4 ps-md-2">Live monitoring of Wires, Lights & Stock Levels.</p>
+        <p class="page-subtitle ms-md-4 ps-md-2 mb-0">Live monitoring of Wires, Lights & Stock Levels.</p>
     </div>
 </div>
 
 <div class="data-card border-0 shadow-sm">
-    <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+    <style>
+        @media (max-width: 768px) {
+            .page-title { font-size: 20px !important; }
+            .page-subtitle { font-size: 12px !important; margin-left: 0 !important; padding-left: 0 !important; }
+            .card-header { flex-direction: column; align-items: flex-start !important; gap: 15px; }
+            .card-header .input-group { max-width: 100% !important; }
+        }
+    </style>
+    <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center flex-wrap">
         <h3 class="h6 mb-0 text-muted fw-bold">Stock Management</h3>
         <div class="input-group" style="max-width: 300px;">
             <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
@@ -84,7 +92,7 @@
                             <button class="btn btn-danger btn-sm adjust-btn p-0 d-flex align-items-center justify-content-center" 
                                     data-id="{{ $item->id }}" data-type="out" style="width: 24px; height: 24px;">-</button>
                             
-                            <a href="{{ route('master.products.stock', $item->id) }}" class="btn btn-light border btn-sm ms-1" title="History">
+                            <a href="{{ route('master.products.stock', encrypt($item->id)) }}" class="btn btn-light border btn-sm ms-1" title="History">
                                 <i class="fas fa-history small text-primary"></i>
                             </a>
                         </div>

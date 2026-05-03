@@ -22,9 +22,15 @@
     .toggle-password:hover {
         color: var(--primary-blue);
     }
+    @media (max-width: 768px) {
+        .grid-2-col { grid-template-columns: 1fr !important; gap: 15px !important; }
+        .data-card { padding: 20px !important; }
+        .profile-header h1 { font-size: 20px !important; }
+        .profile-header p { font-size: 12px !important; }
+    }
 </style>
 <div style="max-width: 800px; margin: 0 auto;">
-    <div style="margin-bottom: 24px;">
+    <div style="margin-bottom: 24px;" class="profile-header">
         <div class="d-flex align-items-center">
             <a href="{{ route('dashboard') }}" class="text-muted back-btn-minimal me-2">
                 <i class="fas fa-arrow-left"></i>
@@ -70,18 +76,20 @@
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <label style="font-size: 14px; font-weight: 600; color: var(--text-dark);">New Password</label>
                         <div class="password-wrapper">
-                            <input type="password" name="password" 
+                            <input type="password" name="password" id="new_password"
                                 style="padding: 10px; padding-right: 40px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; width: 100%;">
                             <i class="fas fa-eye toggle-password"></i>
                         </div>
+                        <span id="new-pwd-error" style="color:#ef4444; font-size:12px; display:none;"></span>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <label style="font-size: 14px; font-weight: 600; color: var(--text-dark);">Confirm Password</label>
                         <div class="password-wrapper">
-                            <input type="password" name="password_confirmation" 
+                            <input type="password" name="password_confirmation" id="confirm_password"
                                 style="padding: 10px; padding-right: 40px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; width: 100%;">
                             <i class="fas fa-eye toggle-password"></i>
                         </div>
+                        <span id="confirm-pwd-error" style="color:#ef4444; font-size:12px; display:none;"></span>
                     </div>
                 </div>
 
@@ -118,6 +126,55 @@
             } else {
                 input.attr('type', 'password');
                 icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        });
+
+        // Real-time Password Matching Validation
+        $('input[name="password"], input[name="password_confirmation"], #current_password').on('keyup', function() {
+            const current = $('#current_password').val();
+            const password = $('input[name="password"]').val();
+            const confirm = $('input[name="password_confirmation"]').val();
+            const saveBtn = $('#save-btn');
+            
+            // Clear all inline errors first
+            $('#current-pwd-error, #new-pwd-error, #confirm-pwd-error').hide().text('');
+            $('#current_password, #new_password, #confirm_password').css('border-color', '#e2e8f0');
+
+            if (current.length > 0 || password.length > 0 || confirm.length > 0) {
+                let hasError = false;
+
+                // Current Password Check
+                if (current.length === 0) {
+                    $('#current-pwd-error').text('Required for password change.').show();
+                    $('#current_password').css('border-color', '#ef4444');
+                    hasError = true;
+                }
+                
+                // New Password Check
+                if (password.length === 0) {
+                    $('#new-pwd-error').text('Please enter a new password.').show();
+                    $('#new_password').css('border-color', '#ef4444');
+                    hasError = true;
+                } else if (password.length < 8) {
+                    $('#new-pwd-error').text('Must be at least 8 characters.').show();
+                    $('#new_password').css('border-color', '#ef4444');
+                    hasError = true;
+                }
+
+                // Confirm Password Check
+                if (confirm.length === 0) {
+                    $('#confirm-pwd-error').text('Please confirm your new password.').show();
+                    $('#confirm_password').css('border-color', '#ef4444');
+                    hasError = true;
+                } else if (password !== confirm) {
+                    $('#confirm-pwd-error').text('Passwords do not match!').show();
+                    $('#confirm_password').css('border-color', '#ef4444');
+                    hasError = true;
+                }
+
+                saveBtn.prop('disabled', hasError);
+            } else {
+                saveBtn.prop('disabled', false);
             }
         });
 

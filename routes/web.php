@@ -37,6 +37,8 @@ Route::middleware('auth')->group(function() {
         Route::put('/roles/{id}', [RBACController::class, 'updateRole'])->name('roles.update');
         Route::delete('/roles/{id}', [RBACController::class, 'destroyRole'])->name('roles.destroy');
         Route::post('/roles/sync', [RBACController::class, 'syncPermissions'])->name('roles.sync');
+        Route::get('/logs', [RBACController::class, 'systemLogs'])->name('logs');
+        Route::post('/logs/{id}/restore', [RBACController::class, 'restoreResource'])->name('logs.restore');
     });
 
     // Sales Orders
@@ -88,6 +90,7 @@ Route::middleware('auth')->group(function() {
         Route::get('/products-export', [MasterController::class, 'exportProductsCSV'])->name('products.export');
         Route::get('/products/{id}/stock', [MasterController::class, 'productStockIndex'])->name('products.stock');
         Route::post('/products/{id}/stock', [MasterController::class, 'storeStockTransaction'])->name('products.stock.store');
+        Route::get('/products/{id}/stock/export', [MasterController::class, 'exportStockTransactionsCSV'])->name('products.stock.export');
 
         // CSV Import Routes
         Route::post('/categories/import', [MasterController::class, 'importCategories'])->name('categories.import');
