@@ -152,9 +152,9 @@
             <button type="submit" id="submit-btn" class="btn login-btn">Login Now</button>
         </form>
 
-        <div style="text-align: center; margin-top: 20px; font-size: 13px; color: var(--secondary-color);">
+        {{-- <div style="text-align: center; margin-top: 20px; font-size: 13px; color: var(--secondary-color);">
             <p>Demo Credentials: <strong>admin@example.com</strong> / <strong>password123</strong></p>
-        </div>
+        </div> --}}
     </div>
 </div>
 @endsection
